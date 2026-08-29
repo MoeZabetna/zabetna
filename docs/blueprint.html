@@ -382,9 +382,9 @@ td.key, td strong{color:var(--ink); font-weight:600;}
       <p class="lead">A discount platform connecting users to participating shops, restaurants, and service categories through in-app offers redeemed in person. Three surfaces share one backend: a consumer app, a merchant verification app, and an operations admin panel.</p>
       <div class="status-row">
         <span class="pill on">Stack decided</span>
-        <span class="pill warn">Schema drafted, not yet applied</span>
-        <span class="pill open">Figma not yet connected</span>
-        <span class="pill open">Supabase project not yet created</span>
+        <span class="pill on">Schema live on Supabase</span>
+        <span class="pill on">Figma connected — Home Screen built</span>
+        <span class="pill open">20 of 21 User App screens remaining</span>
       </div>
       <div class="callout">
         <p><strong>Read this straight:</strong> what follows is the framework — a shared reference so every decision from here (schema, screens, permissions) is built once, correctly, instead of guessed at per-feature. It is not a finished app. The roadmap in §06 is the honest sequence for getting from here to a working v1.</p>
@@ -699,21 +699,24 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <tr><td class="key">Mobile stack</td><td>React Native + Expo, TypeScript</td><td>2026-08-29</td></tr>
           <tr><td class="key">Backend</td><td>Supabase (Postgres, Auth, Storage, Edge Functions, Realtime)</td><td>2026-08-29</td></tr>
           <tr><td class="key">Redemption verification</td><td>QR code, single-use, time-boxed token</td><td>2026-08-29</td></tr>
-          <tr><td class="key">Design source</td><td>Figma file "Zabetna (Copy)" — pending connector access</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Design source</td><td>Figma file "Zabetna (Copy)" — connected; 21 screens inventoried across Splash/Onboarding (5), Auth (5), Main (11)</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Supabase project</td><td><code>albnccpmvwocmizxgfoh</code> · ap-south-1 · free tier ($0/mo) — a pre-existing unrelated project in the same org was found and deliberately not reused</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Icons</td><td>Ionicons (via @expo/vector-icons), mapped to the closest equivalent per Figma icon rather than pixel-matching each source icon library — keeps one scalable font instead of a folder of loose SVGs</td><td>2026-08-29</td></tr>
         </table>
       </div>
     </section>
 
     <section id="open">
       <div class="eyebrow">08 — Open items</div>
-      <h2>What I need from you before Phase 00 can finish</h2>
-      <p>These aren't things I should decide for you — they change real behavior in the schema and the apps.</p>
+      <h2>What's left</h2>
+      <p>Figma and Supabase are both connected now, so foundation is unblocked. What remains is real build volume, plus product questions I still shouldn't decide for you.</p>
       <div class="grid2">
         <div class="card">
-          <h4>Blocking foundation</h4>
+          <h4>User App screens still to build</h4>
           <ul>
-            <li>Connect the Figma MCP connector (claude.ai → connectors → Figma), so the User App is built to the real design, not a guess.</li>
-            <li>Confirm creating the Supabase project under "Mohamad's projects" — region and plan.</li>
+            <li>Splash + Onboarding (4): Splash, Language, onboarding 1–3</li>
+            <li>Auth (5): landing, Sign in, Sign Up, verify your number, verified</li>
+            <li>Main (10): Categories, Menu, Shops, Shop Detail, Redemption Confirmation (×3 states), Settings, Profile, Help/Support</li>
           </ul>
         </div>
         <div class="card">
@@ -722,6 +725,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
             <li>Language(s): Arabic and English both, given the name and market? Affects the schema (translatable fields) from day one — much cheaper to decide now than retrofit.</li>
             <li>Business model: is a shop's listing free, commission-per-redemption, or a flat subscription? Affects the admin panel's shop record and reporting.</li>
             <li>Market/currency: single city (Dubai) or multi-city/country from launch?</li>
+            <li>Home Screen's photo content (banner + shop photos) is placeholder — real Figma stock photos couldn't be pulled into this build (network policy) and will need to come from real onboarded shops anyway.</li>
           </ul>
         </div>
       </div>

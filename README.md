@@ -27,25 +27,26 @@ docs/
 
 ## Status
 
-This is the Phase 0 foundation scaffold — folder structure, schema, and edge
-function logic are written; no Supabase project exists yet and the User App
-UI hasn't been built against the Figma design. See §06 and §08 of the
-blueprint for what's next and what's still open.
+Supabase project `albnccpmvwocmizxgfoh` (ap-south-1) is live with the full
+schema + RLS applied and passing the security advisor clean. Figma is
+connected. The User App's Home Screen is built and bundles successfully
+(`npx expo export`, verified). Everything else — the other 20 User App
+screens, the whole Restaurant App, and the whole Admin Panel — is still
+scaffold only. See §06 and §08 of the blueprint for the real remaining list.
 
-## Setup (once a Supabase project exists)
+`.env` files with the live project's URL and publishable (anon) key are
+already committed for all three apps — that key is meant to be public in a
+client bundle, so this isn't a secret leak, but rotate it before this repo
+ever goes to a public host.
+
+## Setup
 
 ```bash
 pnpm install
+pnpm user-app             # expo start — Home Screen renders
+pnpm restaurant-app        # expo start — default Expo template, not yet built
+pnpm admin                  # next dev — default Next.js template, not yet built
 
-# .env files per app, from the Supabase project settings:
-#   apps/user-app/.env        EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY
-#   apps/restaurant-app/.env  EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY
-#   apps/admin/.env.local     NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-pnpm db:push            # apply supabase/migrations
 pnpm types:generate      # regenerate packages/shared-types/src/database.ts after any schema change
-
-pnpm user-app             # expo start
-pnpm restaurant-app        # expo start
-pnpm admin                  # next dev
+pnpm db:push              # apply new supabase/migrations
 ```
