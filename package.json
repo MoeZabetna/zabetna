@@ -1,0 +1,17 @@
+{
+  "name": "zabetna",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Zabetna — discount platform monorepo (User App, Restaurant App, Admin Panel, shared packages).",
+  "scripts": {
+    "user-app": "pnpm --filter @zabetna/user-app start",
+    "restaurant-app": "pnpm --filter @zabetna/restaurant-app start",
+    "admin": "pnpm --filter @zabetna/admin dev",
+    "types:generate": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID --schema public > packages/shared-types/src/database.ts",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

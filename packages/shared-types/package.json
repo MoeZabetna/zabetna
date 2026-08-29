@@ -1,0 +1,8 @@
+{
+  "name": "@zabetna/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "description": "TypeScript types shared by all three apps. database.ts is generated from the live Postgres schema — never hand-edited."
+}

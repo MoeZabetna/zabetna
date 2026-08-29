@@ -1,0 +1,732 @@
+<title>Zabetna Blueprint</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --paper:#F2F4F0;
+  --paper-raised:#FFFFFF;
+  --ink:#132420;
+  --ink-soft:#4B5A53;
+  --ink-faint:#7C8A82;
+  --line:#D6DBD2;
+  --line-strong:#B9C2B4;
+  --accent:#E0602A;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#FBE6DA;
+  --gold:#B4862F;
+  --gold-soft:#F3E7CD;
+  --teal:#2F7A63;
+  --teal-soft:#DEEEE7;
+  --code-bg:#0F1E1A;
+  --code-ink:#DCE7E1;
+  --shadow: 0 1px 2px rgba(19,36,32,0.06), 0 8px 24px rgba(19,36,32,0.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F1B17;
+    --paper-raised:#152521;
+    --ink:#EAF0EC;
+    --ink-soft:#AEBDB5;
+    --ink-faint:#7E8D85;
+    --line:#28382F;
+    --line-strong:#3A4C41;
+    --accent:#F07A45;
+    --accent-ink:#12211D;
+    --accent-soft:#2A2019;
+    --gold:#D8B156;
+    --gold-soft:#2A2416;
+    --teal:#5FBA9E;
+    --teal-soft:#16302A;
+    --code-bg:#08110E;
+    --code-ink:#CFE0D8;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F1B17;
+  --paper-raised:#152521;
+  --ink:#EAF0EC;
+  --ink-soft:#AEBDB5;
+  --ink-faint:#7E8D85;
+  --line:#28382F;
+  --line-strong:#3A4C41;
+  --accent:#F07A45;
+  --accent-ink:#12211D;
+  --accent-soft:#2A2019;
+  --gold:#D8B156;
+  --gold-soft:#2A2416;
+  --teal:#5FBA9E;
+  --teal-soft:#16302A;
+  --code-bg:#08110E;
+  --code-ink:#CFE0D8;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Public Sans", -apple-system, "Segoe UI", sans-serif;
+  line-height:1.6;
+}
+::selection{background:var(--accent-soft); color:var(--ink);}
+
+h1,h2,h3,h4{
+  font-family:"Fraunces", Georgia, serif;
+  font-weight:600;
+  text-wrap:balance;
+  margin:0 0 0.4em 0;
+  color:var(--ink);
+}
+h1{font-size:2.6rem; font-weight:560; letter-spacing:-0.01em;}
+h2{font-size:1.7rem; font-optical-sizing:auto;}
+h3{font-size:1.2rem;}
+p{margin:0 0 1em 0; max-width:65ch; color:var(--ink-soft);}
+p.lead{font-size:1.08rem; color:var(--ink); max-width:62ch;}
+a{color:var(--teal);}
+code, .mono{font-family:"IBM Plex Mono", ui-monospace, monospace;}
+
+.eyebrow{
+  font-family:"IBM Plex Mono", monospace;
+  font-size:0.72rem;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  gap:0.6em;
+  margin-bottom:0.9em;
+}
+.eyebrow::before{
+  content:"";
+  width:1.3em; height:1px;
+  background:var(--accent);
+  display:inline-block;
+}
+
+.shell{
+  display:grid;
+  grid-template-columns:248px minmax(0,1fr);
+  gap:0;
+  max-width:1180px;
+  margin:0 auto;
+}
+.side{
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  padding:2.2rem 1.2rem 2rem 1.6rem;
+  border-right:1px solid var(--line);
+}
+.side .brand{
+  font-family:"Fraunces", serif;
+  font-size:1.15rem;
+  font-weight:600;
+  margin-bottom:0.15em;
+}
+.side .brand .tag{
+  display:block;
+  font-family:"IBM Plex Mono", monospace;
+  font-size:0.66rem;
+  letter-spacing:0.1em;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  margin-top:0.35em;
+}
+.side nav{margin-top:2rem;}
+.side nav a{
+  display:block;
+  font-size:0.86rem;
+  color:var(--ink-soft);
+  text-decoration:none;
+  padding:0.4em 0;
+  border-left:2px solid transparent;
+  padding-left:0.8em;
+  margin-left:-0.8em;
+}
+.side nav a:hover{color:var(--ink); border-left-color:var(--line-strong);}
+.side nav .num{
+  font-family:"IBM Plex Mono", monospace;
+  color:var(--ink-faint);
+  font-size:0.75rem;
+  margin-right:0.5em;
+}
+.side .meta{
+  margin-top:2.2rem;
+  padding-top:1.2rem;
+  border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono", monospace;
+  font-size:0.7rem;
+  color:var(--ink-faint);
+  line-height:1.9;
+}
+
+main{padding:2.6rem 3rem 6rem 3rem; min-width:0;}
+section{padding-top:1.2rem; margin-bottom:3.6rem; scroll-margin-top:1.5rem;}
+section:first-of-type{padding-top:0;}
+
+.hero{margin-bottom:3.4rem;}
+.hero .status-row{
+  display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1.4rem;
+}
+.pill{
+  font-family:"IBM Plex Mono", monospace;
+  font-size:0.7rem;
+  letter-spacing:0.04em;
+  padding:0.32em 0.75em;
+  border-radius:100px;
+  border:1px solid var(--line-strong);
+  color:var(--ink-soft);
+  white-space:nowrap;
+}
+.pill.on{background:var(--teal-soft); color:var(--teal); border-color:transparent;}
+.pill.warn{background:var(--gold-soft); color:var(--gold); border-color:transparent;}
+.pill.open{background:var(--accent-soft); color:var(--accent); border-color:transparent;}
+
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-top:1.4rem;}
+.grid2{display:grid; grid-template-columns:repeat(2,1fr); gap:1rem; margin-top:1.4rem;}
+@media (max-width:900px){.grid3{grid-template-columns:1fr;} .grid2{grid-template-columns:1fr;}}
+
+.card{
+  background:var(--paper-raised);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:1.4rem 1.5rem;
+  box-shadow:var(--shadow);
+}
+.card h4{font-size:0.72rem; text-transform:uppercase; letter-spacing:0.09em; font-family:"IBM Plex Mono",monospace; color:var(--accent); margin-bottom:0.8em; font-weight:600;}
+.card p{font-size:0.92rem; margin-bottom:0.7em;}
+.card p:last-child{margin-bottom:0;}
+.card ul{margin:0; padding-left:1.1em; font-size:0.92rem; color:var(--ink-soft);}
+.card li{margin-bottom:0.4em;}
+
+table{width:100%; border-collapse:collapse; font-size:0.88rem; margin-top:1rem;}
+th{
+  text-align:left;
+  font-family:"IBM Plex Mono", monospace;
+  font-size:0.68rem;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--ink-faint);
+  padding:0.6em 0.9em;
+  border-bottom:1px solid var(--line-strong);
+  white-space:nowrap;
+}
+td{
+  padding:0.7em 0.9em;
+  border-bottom:1px solid var(--line);
+  color:var(--ink-soft);
+  vertical-align:top;
+}
+td.key, td strong{color:var(--ink); font-weight:600;}
+.table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--paper-raised); box-shadow:var(--shadow);}
+.table-wrap table{margin-top:0;}
+.table-wrap th:first-child, .table-wrap td:first-child{padding-left:1.2rem;}
+
+.domain-tag{
+  display:inline-block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.68rem;
+  padding:0.15em 0.55em;
+  border-radius:5px;
+  background:var(--teal-soft);
+  color:var(--teal);
+}
+
+.flow{display:flex; flex-direction:column; gap:0; margin-top:1.6rem;}
+.flow-step{
+  display:grid;
+  grid-template-columns:2.6rem 1fr;
+  gap:1rem;
+  padding:1.1rem 0;
+  border-bottom:1px dashed var(--line-strong);
+  align-items:start;
+}
+.flow-step:last-child{border-bottom:none;}
+.flow-step .n{
+  font-family:"Fraunces", serif;
+  font-size:1.6rem;
+  color:var(--accent);
+  font-weight:600;
+  line-height:1;
+}
+.flow-step h4{margin-bottom:0.3em; font-size:1rem; font-family:"Public Sans",sans-serif; font-weight:700; color:var(--ink);}
+.flow-step p{font-size:0.9rem; margin-bottom:0;}
+.flow-step .actor{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.66rem;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--ink-faint);
+  margin-left:0.6em;
+}
+
+.arch{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:0.9rem;
+  margin-top:1.6rem;
+  align-items:stretch;
+}
+.arch-col{display:flex; flex-direction:column; gap:0.7rem;}
+.arch-box{
+  border:1px solid var(--line-strong);
+  border-radius:10px;
+  padding:0.9rem 1rem;
+  background:var(--paper-raised);
+  font-size:0.85rem;
+  box-shadow:var(--shadow);
+}
+.arch-box .t{font-weight:700; color:var(--ink); font-size:0.88rem; margin-bottom:0.2em;}
+.arch-box .d{color:var(--ink-faint); font-size:0.76rem; font-family:"IBM Plex Mono",monospace;}
+.arch-arrow{
+  text-align:center; color:var(--ink-faint); font-size:1.1rem; margin:0; padding:0.1rem 0;
+}
+.arch-backend{
+  grid-column:1/-1;
+  border:1px solid var(--accent);
+  border-radius:12px;
+  padding:1.1rem 1.2rem;
+  background:var(--accent-soft);
+  margin-top:0.3rem;
+}
+.arch-backend .t{font-family:"IBM Plex Mono",monospace; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); margin-bottom:0.7em;}
+.arch-services{display:flex; gap:0.6rem; flex-wrap:wrap;}
+.svc{
+  background:var(--paper-raised);
+  border:1px solid var(--line-strong);
+  border-radius:7px;
+  padding:0.4em 0.8em;
+  font-size:0.8rem;
+  font-family:"IBM Plex Mono",monospace;
+  color:var(--ink);
+}
+@media (max-width:900px){.arch{grid-template-columns:1fr;}}
+
+.roadmap{margin-top:1.6rem;}
+.phase{
+  display:grid;
+  grid-template-columns:6.5rem 1fr;
+  gap:1.4rem;
+  padding:1.3rem 0;
+  border-top:1px solid var(--line);
+}
+.phase:last-child{padding-bottom:0;}
+.phase .ph-label{font-family:"IBM Plex Mono",monospace; font-size:0.72rem; color:var(--ink-faint); padding-top:0.2em;}
+.phase .ph-label b{display:block; color:var(--accent); font-size:0.95rem; font-family:"Fraunces",serif; font-weight:600;}
+.phase h4{margin-bottom:0.4em;}
+.phase .done{
+  margin-top:0.7em;
+  font-size:0.82rem;
+  color:var(--teal);
+  font-family:"IBM Plex Mono",monospace;
+  padding-left:1.2em;
+  position:relative;
+}
+.phase .done::before{content:"✓"; position:absolute; left:0;}
+
+.perm-table td, .perm-table th{text-align:center;}
+.perm-table td:first-child, .perm-table th:first-child{text-align:left;}
+.perm-table .yes{color:var(--teal); font-weight:700;}
+.perm-table .no{color:var(--line-strong);}
+.perm-table .partial{color:var(--gold); font-weight:700;}
+
+.callout{
+  border-left:3px solid var(--accent);
+  background:var(--accent-soft);
+  padding:1rem 1.2rem;
+  border-radius:0 8px 8px 0;
+  margin-top:1.4rem;
+}
+.callout p{margin-bottom:0; color:var(--ink); font-size:0.92rem;}
+.callout p strong{color:var(--accent);}
+
+.footline{
+  margin-top:5rem;
+  padding-top:1.6rem;
+  border-top:1px solid var(--line);
+  font-family:"IBM Plex Mono",monospace;
+  font-size:0.72rem;
+  color:var(--ink-faint);
+}
+</style>
+
+<div class="shell">
+  <aside class="side">
+    <div class="brand">Zabetna
+      <span class="tag">Blueprint · v0.1</span>
+    </div>
+    <nav>
+      <a href="#overview"><span class="num">00</span>Overview</a>
+      <a href="#scope"><span class="num">01</span>Product scope</a>
+      <a href="#architecture"><span class="num">02</span>System architecture</a>
+      <a href="#data-model"><span class="num">03</span>Data model</a>
+      <a href="#redemption"><span class="num">04</span>Redemption flow</a>
+      <a href="#rbac"><span class="num">05</span>Admin roles &amp; permissions</a>
+      <a href="#roadmap"><span class="num">06</span>Build roadmap</a>
+      <a href="#decisions"><span class="num">07</span>Decision log</a>
+      <a href="#open"><span class="num">08</span>Open items</a>
+    </nav>
+    <div class="meta">
+      Prepared for Mo<br>
+      Dubai · Aug 2026<br>
+      Status: Foundation
+    </div>
+  </aside>
+
+  <main>
+    <section class="hero" id="overview">
+      <div class="eyebrow">Product &amp; technical blueprint</div>
+      <h1>Zabetna</h1>
+      <p class="lead">A discount platform connecting users to participating shops, restaurants, and service categories through in-app offers redeemed in person. Three surfaces share one backend: a consumer app, a merchant verification app, and an operations admin panel.</p>
+      <div class="status-row">
+        <span class="pill on">Stack decided</span>
+        <span class="pill warn">Schema drafted, not yet applied</span>
+        <span class="pill open">Figma not yet connected</span>
+        <span class="pill open">Supabase project not yet created</span>
+      </div>
+      <div class="callout">
+        <p><strong>Read this straight:</strong> what follows is the framework — a shared reference so every decision from here (schema, screens, permissions) is built once, correctly, instead of guessed at per-feature. It is not a finished app. The roadmap in §06 is the honest sequence for getting from here to a working v1.</p>
+      </div>
+    </section>
+
+    <section id="scope">
+      <div class="eyebrow">01 — Product scope</div>
+      <h2>Three surfaces, one source of truth</h2>
+      <p>Each surface has a distinct job and a distinct user. All three read and write the same backend — nothing is duplicated or synced by hand.</p>
+      <div class="grid3">
+        <div class="card">
+          <h4>User App</h4>
+          <p>Consumer-facing. Browse categories, discover shops, view and save offers, redeem via QR at checkout.</p>
+          <ul>
+            <li>Category &amp; shop browsing, search, geolocation</li>
+            <li>Offer detail, favorites, redemption history</li>
+            <li>QR generation at point of redemption</li>
+            <li>Profile, notifications</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Restaurant / Shop App</h4>
+          <p>Merchant-facing. Used by shop staff to verify and log redemptions in real time.</p>
+          <ul>
+            <li>Staff login, scoped to one shop</li>
+            <li>QR scanner, redemption verification</li>
+            <li>Live usage log for that shop</li>
+            <li>Own-shop offer status (read-only or limited edit)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Admin Panel</h4>
+          <p>Operations-facing, web-based. Runs the platform: onboarding, content, and oversight.</p>
+          <ul>
+            <li>Shop onboarding &amp; approval, category management</li>
+            <li>Banners, featured listings (top 3 per category)</li>
+            <li>Overall + per-shop reporting</li>
+            <li>Admin users with role-scoped permissions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="eyebrow">02 — System architecture</div>
+      <h2>One backend, three clients</h2>
+      <p>The mobile apps and admin panel are thin clients over a single Supabase project. This keeps the data model, auth, and business rules (redemption validity, usage limits) in one place instead of re-implemented per app.</p>
+
+      <div class="arch">
+        <div class="arch-col">
+          <div class="arch-box">
+            <div class="t">User App</div>
+            <div class="d">React Native · Expo</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+        </div>
+        <div class="arch-col">
+          <div class="arch-box">
+            <div class="t">Restaurant App</div>
+            <div class="d">React Native · Expo · Camera</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+        </div>
+        <div class="arch-col">
+          <div class="arch-box">
+            <div class="t">Admin Panel</div>
+            <div class="d">Next.js · Vercel</div>
+          </div>
+          <div class="arch-arrow">↓</div>
+        </div>
+        <div class="arch-backend">
+          <div class="t">Supabase project</div>
+          <div class="arch-services">
+            <span class="svc">Postgres + RLS</span>
+            <span class="svc">Auth (OTP / email)</span>
+            <span class="svc">Storage</span>
+            <span class="svc">Edge Functions</span>
+            <span class="svc">Realtime</span>
+            <span class="svc">pg_cron</span>
+          </div>
+        </div>
+      </div>
+
+      <p style="margin-top:1.6rem">Shared TypeScript types are generated straight from the Postgres schema (<code>supabase gen types</code>) and consumed by all three apps via a shared package, so a schema change surfaces as a type error in every client immediately rather than as a runtime bug in one of them.</p>
+
+      <div class="table-wrap" style="margin-top:1.4rem">
+        <table>
+          <tr><th>Layer</th><th>Choice</th><th>Why here, specifically</th></tr>
+          <tr><td class="key">Mobile framework</td><td>React Native + Expo, TypeScript</td><td>One codebase for iOS + Android across two apps; Expo gives camera/QR, push, and OTA updates without native build overhead for a small team.</td></tr>
+          <tr><td class="key">Admin panel</td><td>Next.js (App Router) + TypeScript + Tailwind</td><td>Server-rendered where it matters (reports, RBAC-gated pages), same language and types as the mobile apps.</td></tr>
+          <tr><td class="key">Backend</td><td>Supabase (Postgres)</td><td>Relational data fits shop/category/offer/redemption relationships and per-shop reporting far better than a document store; RLS gives row-level security for RBAC and merchant scoping for free.</td></tr>
+          <tr><td class="key">Auth</td><td>Supabase Auth — phone/email OTP (users), email+password (staff &amp; admins)</td><td>Consumers expect frictionless OTP login; merchant and admin accounts are provisioned, not self-signed-up, so password auth is appropriate there.</td></tr>
+          <tr><td class="key">Push</td><td>Expo Push Notifications</td><td>Native pairing with Expo-built apps, no separate FCM/APNs plumbing to maintain directly.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="data-model">
+      <div class="eyebrow">03 — Data model</div>
+      <h2>Schema, by domain</h2>
+      <p>Grouped by responsibility rather than listed alphabetically, since that's how permissions and reporting will actually be scoped later. Full SQL migrations are in <code>supabase/migrations/</code> alongside this document — this is the reference view.</p>
+
+      <h3 style="margin-top:2rem"><span class="domain-tag">identity</span></h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
+          <tr><td class="key">profiles</td><td>One row per Supabase Auth user — the consumer identity</td><td>id (fk auth.users), full_name, phone, avatar_url, locale, created_at</td></tr>
+          <tr><td class="key">shop_staff</td><td>Restaurant App logins, scoped to exactly one shop</td><td>id, shop_id, auth_user_id, role (owner/manager/staff), status</td></tr>
+          <tr><td class="key">admin_users</td><td>Admin Panel logins</td><td>id, auth_user_id, full_name, role_id, status, invited_by</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="domain-tag">catalog</span></h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
+          <tr><td class="key">categories</td><td>Top-level and nested categories (Dining, Beauty, Fitness…)</td><td>id, name, icon, parent_id, sort_order, is_active</td></tr>
+          <tr><td class="key">shops</td><td>The onboarded businesses</td><td>id, name, category_id, description, logo_url, cover_images[], geo (lat/lng), address, phone, hours, status (pending/active/suspended)</td></tr>
+          <tr><td class="key">favorites</td><td>User-saved shops</td><td>user_id, shop_id, created_at</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="domain-tag">offers &amp; redemption</span></h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
+          <tr><td class="key">offers</td><td>A discount published by a shop</td><td>id, shop_id, title, terms, discount_type, discount_value, start_at, end_at, per_user_limit, total_limit, status</td></tr>
+          <tr><td class="key">redemptions</td><td>Every redemption attempt — the source of all usage reporting</td><td>id, offer_id, shop_id, user_id, token, status (pending/verified/expired/cancelled), verified_by (shop_staff), verified_at, expires_at</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="domain-tag">merchandising</span></h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
+          <tr><td class="key">banners</td><td>In-app promotional banners</td><td>id, image_url, link_type, link_target, placement, start_at, end_at, sort_order, status</td></tr>
+          <tr><td class="key">featured_listings</td><td>Curated "top 3" shops per category</td><td>id, category_id, shop_id, rank (1–3), start_at, end_at</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin-top:2rem"><span class="domain-tag">admin &amp; governance</span></h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
+          <tr><td class="key">admin_roles</td><td>Named roles (Super Admin, Content Manager, …)</td><td>id, name, description</td></tr>
+          <tr><td class="key">admin_permissions</td><td>Granular capability keys — see §05</td><td>id, key, label, category</td></tr>
+          <tr><td class="key">role_permissions</td><td>Join table: which permissions each role grants</td><td>role_id, permission_id</td></tr>
+          <tr><td class="key">audit_log</td><td>Every admin write, for accountability</td><td>id, admin_id, action, entity_type, entity_id, diff, created_at</td></tr>
+        </table>
+      </div>
+
+      <div class="callout">
+        <p><strong>Every table above ships with Row-Level Security policies</strong> — a user can only read/write their own profile, favorites, and redemptions; shop staff can only touch their own shop's offers and redemptions; admin access is gated by <code>role_permissions</code>, checked at the database layer, not just hidden in the UI. This matters because it means a bug in the admin panel's UI can't accidentally expose another shop's data — the database refuses the query regardless.</p>
+      </div>
+    </section>
+
+    <section id="redemption">
+      <div class="eyebrow">04 — Redemption flow</div>
+      <h2>QR-based, time-boxed, single-use</h2>
+      <p>This is the one flow where a design mistake becomes real money lost, so it gets the most explicit spec. A generated code is worthless as fraud protection unless it expires, is bound to one shop, and can only ever be marked verified once.</p>
+
+      <div class="flow">
+        <div class="flow-step">
+          <div class="n">1</div>
+          <div>
+            <h4>User taps "Redeem" on an offer <span class="actor">User App</span></h4>
+            <p>Client calls a <code>create_redemption</code> edge function — never writes the redemption row directly. The function checks the offer is active, within its date window, and under both the per-user and total usage limits before doing anything else.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="n">2</div>
+          <div>
+            <h4>Server issues a short-lived token <span class="actor">Edge Function</span></h4>
+            <p>A <code>redemptions</code> row is created with status <code>pending</code>, a random single-use token, and <code>expires_at</code> ~3 minutes out. The token — not the offer ID — is what gets encoded in the QR code.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="n">3</div>
+          <div>
+            <h4>QR renders on the User App</h4>
+            <p>The app shows a live countdown alongside the code, so the user understands it must be scanned promptly — this is a fraud control, not a UX afterthought.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="n">4</div>
+          <div>
+            <h4>Staff scans the code <span class="actor">Restaurant App</span></h4>
+            <p>The scan calls <code>verify_redemption</code> with the token and the scanning staff member's <code>shop_id</code>. The function rejects the scan outright if the token's shop doesn't match — a code generated for Shop A cannot be redeemed at Shop B, even by an authenticated staff account elsewhere.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="n">5</div>
+          <div>
+            <h4>Server verifies and locks the row</h4>
+            <p>Checks: not expired, status still <code>pending</code>, limits not exceeded since issuance. On success, status flips to <code>verified</code> atomically (row-level lock, so two near-simultaneous scans can't both succeed) and <code>verified_by</code> / <code>verified_at</code> are recorded.</p>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="n">6</div>
+          <div>
+            <h4>Both apps update in real time</h4>
+            <p>A Supabase Realtime subscription pushes the status change straight to the User App, which flips from countdown to a confirmation screen with no polling and no manual refresh.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <p><strong>Explicitly out of scope for v1, flagged for later:</strong> GPS-proximity checks (confirming the user's device is actually near the shop at scan time) and device-fingerprint rate limiting. Both are real anti-fraud upgrades worth adding once usage volume justifies the engineering cost — building them into v1 would slow the first launch for a risk that's low at low volume.</p>
+      </div>
+    </section>
+
+    <section id="rbac">
+      <div class="eyebrow">05 — Admin roles &amp; permissions</div>
+      <h2>Role-based access, enforced twice</h2>
+      <p>Permissions are checked in the Admin Panel UI (so people don't see controls they can't use) <em>and</em> in Postgres RLS (so a UI bug is never a security hole). Roles below are starting defaults — <code>admin_roles</code> is a table, not an enum, so operations can define new roles without an engineering change.</p>
+
+      <div class="table-wrap">
+        <table class="perm-table">
+          <tr>
+            <th>Capability</th>
+            <th>Super Admin</th>
+            <th>Ops Manager</th>
+            <th>Content Manager</th>
+            <th>Support Agent</th>
+            <th>Reports Viewer</th>
+          </tr>
+          <tr><td>Approve / suspend shops</td><td class="yes">Full</td><td class="yes">Full</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Manage categories</td><td class="yes">Full</td><td class="yes">Full</td><td class="partial">Edit</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Manage banners &amp; featured (top 3)</td><td class="yes">Full</td><td class="partial">Edit</td><td class="yes">Full</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>View / resolve support &amp; disputes</td><td class="yes">Full</td><td class="partial">View</td><td class="no">—</td><td class="yes">Full</td><td class="no">—</td></tr>
+          <tr><td>View reports (overall + per-shop)</td><td class="yes">Full</td><td class="yes">Full</td><td class="partial">Own content only</td><td class="partial">View</td><td class="yes">Full</td></tr>
+          <tr><td>Export reports</td><td class="yes">Full</td><td class="partial">Yes</td><td class="no">—</td><td class="no">—</td><td class="yes">Full</td></tr>
+          <tr><td>Manage admin users &amp; roles</td><td class="yes">Full</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
+        </table>
+      </div>
+      <p style="margin-top:1rem; font-size:0.85rem">Every action a role permits is also written to <code>audit_log</code> — who did what, to which record, and when — visible to Super Admin regardless of who performed it.</p>
+    </section>
+
+    <section id="roadmap">
+      <div class="eyebrow">06 — Build roadmap</div>
+      <h2>Six phases, in dependency order</h2>
+      <p>Ordered by what actually blocks what — reporting can't be built before redemptions exist, redemptions can't be verified before the Restaurant App has staff auth, and none of it means anything without a schema underneath it. Each phase has an explicit "done when," not a vague sense of progress.</p>
+
+      <div class="roadmap">
+        <div class="phase">
+          <div class="ph-label"><b>00</b>Now</div>
+          <div>
+            <h4>Foundation</h4>
+            <p>Repo scaffold, Supabase project provisioned, schema applied as migrations with RLS, design tokens pulled from Figma, CI skeleton.</p>
+            <div class="done">Done when: a developer can clone the repo, run one setup command, and hit a live (empty) database from all three app shells.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="ph-label"><b>01</b></div>
+          <div>
+            <h4>Admin core</h4>
+            <p>Admin auth, role/permission system, category CRUD, shop onboarding &amp; approval queue, admin user management.</p>
+            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="ph-label"><b>02</b></div>
+          <div>
+            <h4>User App MVP</h4>
+            <p>Auth (OTP), category/shop browse, search, shop detail, offer detail, favorites, profile — matched to the Figma design.</p>
+            <div class="done">Done when: a user can sign up, find a shop, and read a real offer's terms end-to-end.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="ph-label"><b>03</b></div>
+          <div>
+            <h4>Redemption loop</h4>
+            <p>QR generation, Restaurant App staff auth + scanner, the full verify flow in §04, realtime status sync.</p>
+            <div class="done">Done when: a real redemption can happen end-to-end between two physical devices.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="ph-label"><b>04</b></div>
+          <div>
+            <h4>Reporting</h4>
+            <p>Per-shop dashboard (their own redemptions only, via RLS), overall admin reporting, CSV export.</p>
+            <div class="done">Done when: a shop owner and Super Admin can both answer "how many redemptions this week" without asking a developer.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="ph-label"><b>05</b></div>
+          <div>
+            <h4>Merchandising &amp; polish</h4>
+            <p>Banners, featured listings (top 3 per category), push notifications, empty/error states, accessibility pass.</p>
+            <div class="done">Done when: the app doesn't just work — it looks and feels finished.</div>
+          </div>
+        </div>
+        <div class="phase">
+          <div class="ph-label"><b>06</b></div>
+          <div>
+            <h4>Launch hardening</h4>
+            <p>Load/security testing on the redemption path specifically, rate limiting, app store submission assets and review.</p>
+            <div class="done">Done when: both apps pass store review and the redemption endpoint survives a deliberate abuse test.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="decisions">
+      <div class="eyebrow">07 — Decision log</div>
+      <h2>What's already settled</h2>
+      <p>Recorded so nobody re-litigates these mid-build without a real reason to.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Decision</th><th>Choice</th><th>Date</th></tr>
+          <tr><td class="key">Mobile stack</td><td>React Native + Expo, TypeScript</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Backend</td><td>Supabase (Postgres, Auth, Storage, Edge Functions, Realtime)</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Redemption verification</td><td>QR code, single-use, time-boxed token</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Design source</td><td>Figma file "Zabetna (Copy)" — pending connector access</td><td>2026-08-29</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="open">
+      <div class="eyebrow">08 — Open items</div>
+      <h2>What I need from you before Phase 00 can finish</h2>
+      <p>These aren't things I should decide for you — they change real behavior in the schema and the apps.</p>
+      <div class="grid2">
+        <div class="card">
+          <h4>Blocking foundation</h4>
+          <ul>
+            <li>Connect the Figma MCP connector (claude.ai → connectors → Figma), so the User App is built to the real design, not a guess.</li>
+            <li>Confirm creating the Supabase project under "Mohamad's projects" — region and plan.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Product questions, not yet decided</h4>
+          <ul>
+            <li>Language(s): Arabic and English both, given the name and market? Affects the schema (translatable fields) from day one — much cheaper to decide now than retrofit.</li>
+            <li>Business model: is a shop's listing free, commission-per-redemption, or a flat subscription? Affects the admin panel's shop record and reporting.</li>
+            <li>Market/currency: single city (Dubai) or multi-city/country from launch?</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <div class="footline">Zabetna — Blueprint v0.1 — this document is the plan, not the product. Next: repo scaffold + schema migrations, in parallel with Figma access.</div>
+  </main>
+</div>
