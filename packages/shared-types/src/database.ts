@@ -1,7 +1,5 @@
-// AUTO-GENERATED — do not hand-edit. Regenerate with `pnpm types:generate`
-// after any change to supabase/migrations/. Source: Supabase project
-// albnccpmvwocmizxgfoh (ap-south-1), generated 2026-08-29.
-
+// AUTO-GENERATED — do not hand-edit. Regenerate with 'pnpm types:generate'
+// (wraps `supabase gen types typescript`). Last generated 2026-08-29.
 export type Json =
   | string
   | number
@@ -192,6 +190,7 @@ export type Database = {
         Row: {
           created_at: string
           icon: string | null
+          icon_url: string | null
           id: string
           is_active: boolean
           name: string
@@ -201,6 +200,7 @@ export type Database = {
         Insert: {
           created_at?: string
           icon?: string | null
+          icon_url?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -210,6 +210,7 @@ export type Database = {
         Update: {
           created_at?: string
           icon?: string | null
+          icon_url?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -304,6 +305,7 @@ export type Database = {
       offers: {
         Row: {
           created_at: string
+          days_of_week: number[]
           description: string | null
           discount_type: Database["public"]["Enums"]["discount_type"]
           discount_value: number
@@ -321,6 +323,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          days_of_week?: number[]
           description?: string | null
           discount_type: Database["public"]["Enums"]["discount_type"]
           discount_value: number
@@ -338,6 +341,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          days_of_week?: number[]
           description?: string | null
           discount_type?: Database["public"]["Enums"]["discount_type"]
           discount_value?: number

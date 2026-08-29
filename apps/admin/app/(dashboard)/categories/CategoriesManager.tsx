@@ -2,12 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { ChevronUp, ChevronDown, Pencil, Trash2, Plus, Eye, EyeOff } from "lucide-react";
-import { IconPicker } from "@/components/IconPicker";
+import { IconPicker, type IconValue } from "@/components/IconPicker";
 import { getCategoryIcon } from "@/lib/icons";
 import { createCategory, updateCategory, deleteCategory, moveCategory } from "./actions";
 import type { Tables } from "@zabetna/shared-types";
 
-type Category = Pick<Tables<"categories">, "id" | "name" | "icon" | "is_active" | "sort_order" | "parent_id">;
+type Category = Pick<
+  Tables<"categories">,
+  "id" | "name" | "icon" | "icon_url" | "is_active" | "sort_order" | "parent_id"
+>;
 
 // Nesting (categories.parent_id) exists in the schema for future subcategory
 // support, but this first pass of the picker only manages the top-level
@@ -88,8 +91,13 @@ export function CategoriesManager({
                   <ChevronDown size={16} />
                 </button>
               </div>
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-100 text-neutral-700">
-                <Icon size={18} />
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-md bg-neutral-100 text-neutral-700">
+                {cat.icon_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL, not a local/optimizable asset
+                  <img src={cat.icon_url} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <Icon size={18} />
+                )}
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium text-neutral-900">{cat.name}</div>
@@ -154,7 +162,10 @@ function CategoryFormModal({
   onSaved: (category: Category) => void;
 }) {
   const [name, setName] = useState(category?.name ?? "");
-  const [icon, setIcon] = useState(category?.icon ?? "Store");
+  const [iconValue, setIconValue] = useState<IconValue>({
+    icon: category?.icon ?? "Store",
+    iconUrl: category?.icon_url ?? null,
+  });
   const [isActive, setIsActive] = useState(category?.is_active ?? true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -166,20 +177,29 @@ function CategoryFormModal({
     }
     setSaving(true);
     setError(null);
+    const { icon, iconUrl } = iconValue;
 
     if (category) {
-      const res = await updateCategory(category.id, { name, icon, isActive });
+      const res = await updateCategory(category.id, { name, icon, iconUrl, isActive });
       setSaving(false);
       if (res.error) return setError(res.error);
-      onSaved({ ...category, name, icon, is_active: isActive });
+      onSaved({ ...category, name, icon, icon_url: iconUrl, is_active: isActive });
     } else {
-      const res = await createCategory({ name, icon, parentId: null });
+      const res = await createCategory({ name, icon, iconUrl, parentId: null });
       setSaving(false);
       if (res.error) return setError(res.error);
       // The server action doesn't return the new row's id/sort_order — this
       // page revalidates via revalidatePath, so the temp id is only visible
       // for the instant before the server component re-fetches.
-      onSaved({ id: crypto.randomUUID(), name, icon, is_active: isActive, sort_order: 0, parent_id: null });
+      onSaved({
+        id: crypto.randomUUID(),
+        name,
+        icon,
+        icon_url: iconUrl,
+        is_active: isActive,
+        sort_order: 0,
+        parent_id: null,
+      });
     }
   }
 
@@ -200,7 +220,7 @@ function CategoryFormModal({
 
         <label className="mb-1 block text-xs font-medium text-neutral-600">Icon</label>
         <div className="mb-4">
-          <IconPicker value={icon} onChange={setIcon} />
+          <IconPicker value={iconValue} onChange={setIconValue} />
         </div>
 
         <label className="mb-4 flex items-center gap-2 text-sm text-neutral-700">

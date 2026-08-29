@@ -20,7 +20,9 @@ begin
     instance_id, id, aud, role, email, encrypted_password,
     email_confirmed_at, created_at, updated_at,
     raw_app_meta_data, raw_user_meta_data,
-    confirmation_token, recovery_token
+    confirmation_token, recovery_token,
+    email_change, email_change_token_new, email_change_token_current,
+    phone_change, phone_change_token, reauthentication_token
   ) values (
     '00000000-0000-0000-0000-000000000000',
     new_user_id,
@@ -31,7 +33,11 @@ begin
     now(), now(), now(),
     '{"provider":"email","providers":["email"]}',
     '{}',
-    '', ''
+    -- GoTrue's schema query 500s ("Database error querying schema") if any
+    -- of these are NULL instead of '' — they're never set by a normal
+    -- signup, but this insert bypasses that flow, so they need it explicitly.
+    -- See: https://supabase.com/docs/guides/troubleshooting/auth-error-500-database-error-querying-schema-eb6b44
+    '', '', '', '', '', '', '', ''
   );
 
   insert into auth.identities (

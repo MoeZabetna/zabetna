@@ -1,69 +1,40 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { LoginForm } from "@/components/LoginForm";
 
-import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+// NOTE: there is deliberately no middleware.ts doing auth in this app —
+// middleware.ts is a permanent no-op (see its own comment for the full
+// incident history — a Next.js Edge Runtime bundling bug, not fixable from
+// application code).
+//
+// Auth is enforced entirely by Server Components — the same
+// createServerClient code runs correctly here and in
+// app/(dashboard)/layout.tsx, which is the real access-control boundary for
+// every dashboard route. This page's job is just the UX nicety of bouncing
+// an already-logged-in admin away from /login.
+//
+// Trade-off worth knowing: Supabase's own guidance recommends middleware
+// specifically so it can refresh the session cookie on every request.
+// Without that, a Server Component can read cookies but not write refreshed
+// ones back to the browser (see lib/supabase/server.ts). In practice this is
+// covered by @supabase/ssr's browser client (lib/supabase/client.ts), which
+// refreshes the access token and syncs the cookie itself as long as a tab
+// stays open — so the realistic failure mode is just "signed out after
+// being away past token expiry, sent back to /login", not a silent
+// mid-session logout.
+export default async function LoginPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-    setLoading(false);
-    if (signInError) {
-      setError(signInError.message);
-      return;
-    }
-    router.push("/");
-    router.refresh();
+  if (user) {
+    redirect("/");
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="mb-1 text-xl font-semibold text-neutral-900">Zabetna Admin</h1>
-        <p className="mb-6 text-sm text-neutral-500">Sign in with your admin account.</p>
-
-        <label className="mb-1 block text-sm font-medium text-neutral-700">Email</label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mb-4 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
-          autoComplete="email"
-        />
-
-        <label className="mb-1 block text-sm font-medium text-neutral-700">Password</label>
-        <input
-          type="password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-4 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
-          autoComplete="current-password"
-        />
-
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-        >
-          {loading ? "Signing in…" : "Sign in"}
-        </button>
-      </form>
+      <LoginForm />
     </div>
   );
 }

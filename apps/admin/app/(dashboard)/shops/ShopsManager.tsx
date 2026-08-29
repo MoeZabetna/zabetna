@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { Pencil, Trash2, Plus, MapPin } from "lucide-react";
+import Link from "next/link";
+import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { createShop, updateShop, deleteShop, type ShopInput } from "./actions";
 
 // Leaflet touches `window` at import time — must be client-only, and
@@ -45,10 +46,12 @@ export function ShopsManager({
   initialShops,
   categories,
   canManage,
+  offerStatsByShop,
 }: {
   initialShops: ShopRow[];
   categories: { id: string; name: string }[];
   canManage: boolean;
+  offerStatsByShop: Record<string, { active: number; inactive: number }>;
 }) {
   const [shops, setShops] = useState(initialShops);
   const [editing, setEditing] = useState<ShopRow | "new" | null>(null);
@@ -75,18 +78,22 @@ export function ShopsManager({
               <th className="px-4 py-2 font-medium">Category</th>
               <th className="px-4 py-2 font-medium">Location</th>
               <th className="px-4 py-2 font-medium">Status</th>
+              <th className="px-4 py-2 font-medium">Active offers</th>
+              <th className="px-4 py-2 font-medium">Needs attention</th>
               <th className="px-4 py-2" />
             </tr>
           </thead>
           <tbody>
             {shops.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-neutral-500">
+                <td colSpan={7} className="px-4 py-6 text-center text-neutral-500">
                   No shops yet — onboard the first one below.
                 </td>
               </tr>
             )}
-            {shops.map((shop) => (
+            {shops.map((shop) => {
+              const stats = offerStatsByShop[shop.id] ?? { active: 0, inactive: 0 };
+              return (
               <tr key={shop.id} className="border-t border-neutral-100">
                 <td className="px-4 py-3">
                   <div className="font-medium text-neutral-900">{shop.name}</div>
@@ -112,6 +119,33 @@ export function ShopsManager({
                     {shop.status}
                   </span>
                 </td>
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/offers?shop=${shop.id}`}
+                    className="flex items-center gap-1 text-neutral-600 hover:text-neutral-900"
+                  >
+                    <Tag size={13} />
+                    {stats.active > 0 ? `${stats.active} active` : "None"}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  {stats.inactive > 0 ? (
+                    <Link
+                      href={`/offers?shop=${shop.id}`}
+                      className="flex items-center gap-1 text-amber-700 hover:text-amber-900"
+                      title="Includes offers that are paused, or expired either by status or because their end date has passed"
+                    >
+                      <AlertTriangle size={13} />
+                      {stats.inactive} inactive
+                    </Link>
+                  ) : stats.active > 0 ? (
+                    <span className="flex items-center gap-1 text-emerald-600">
+                      <CheckCircle2 size={13} /> All active
+                    </span>
+                  ) : (
+                    <span className="text-neutral-400">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right">
                   {canManage && (
                     <div className="flex justify-end gap-2">
@@ -125,7 +159,8 @@ export function ShopsManager({
                   )}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

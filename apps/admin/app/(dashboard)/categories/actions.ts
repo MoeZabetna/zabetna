@@ -9,12 +9,18 @@ import { createClient } from "@/lib/supabase/server";
 // A rejected write comes back as a Postgres RLS error, surfaced to the
 // caller as `error`.
 
-export async function createCategory(input: { name: string; icon: string; parentId: string | null }) {
+export async function createCategory(input: {
+  name: string;
+  icon: string;
+  iconUrl: string | null;
+  parentId: string | null;
+}) {
   const supabase = await createClient();
   const { count } = await supabase.from("categories").select("id", { count: "exact", head: true });
   const { error } = await supabase.from("categories").insert({
     name: input.name,
     icon: input.icon,
+    icon_url: input.iconUrl,
     parent_id: input.parentId,
     sort_order: count ?? 0,
   });
@@ -24,12 +30,12 @@ export async function createCategory(input: { name: string; icon: string; parent
 
 export async function updateCategory(
   id: string,
-  input: { name: string; icon: string; isActive: boolean }
+  input: { name: string; icon: string; iconUrl: string | null; isActive: boolean }
 ) {
   const supabase = await createClient();
   const { error } = await supabase
     .from("categories")
-    .update({ name: input.name, icon: input.icon, is_active: input.isActive })
+    .update({ name: input.name, icon: input.icon, icon_url: input.iconUrl, is_active: input.isActive })
     .eq("id", id);
   revalidatePath("/categories");
   return { error: error?.message ?? null };

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: zabetna-admin
+    runtime: node
+    plan: starter
+    region: oregon
+    # No rootDir set on purpose: Render's rootDir restricts file access to
+    # that subdirectory only, but apps/admin depends on workspace packages
+    # at the repo root (packages/shared-types, packages/api-client), so the
+    # build needs the whole monorepo checkout available.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile=false && pnpm --filter @zabetna/admin run build
+    startCommand: pnpm --filter @zabetna/admin run start
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.2
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+    autoDeployTrigger: commit

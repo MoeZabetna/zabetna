@@ -22,7 +22,9 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
           } catch {
             // Called from a Server Component that can't set cookies — safe to
-            // ignore because middleware.ts refreshes the session on every request.
+            // ignore. middleware.ts is intentionally a no-op (see its own
+            // comment) and does NOT refresh the session; the browser client
+            // (lib/supabase/client.ts) is what keeps the session cookie fresh.
           }
         },
       },

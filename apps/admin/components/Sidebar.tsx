@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Store, Image as ImageIcon, BarChart3, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Store, Tag, Image as ImageIcon, BarChart3, ShieldCheck } from "lucide-react";
 
 const NAV = [
   { href: "/categories", label: "Categories", icon: LayoutGrid, permission: "content.manage" },
   { href: "/shops", label: "Shops", icon: Store, permission: "shops.manage" },
+  { href: "/offers", label: "Offers", icon: Tag, permission: "shops.manage" },
   { href: "/banners", label: "Banners", icon: ImageIcon, permission: "content.manage" },
   { href: "/reports", label: "Reports", icon: BarChart3, permission: "reports.view" },
   { href: "/admins", label: "Admins", icon: ShieldCheck, permission: "admins.manage" },
