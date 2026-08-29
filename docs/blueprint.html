@@ -383,7 +383,9 @@ td.key, td strong{color:var(--ink); font-weight:600;}
       <div class="status-row">
         <span class="pill on">Stack decided</span>
         <span class="pill on">Schema live on Supabase</span>
-        <span class="pill on">Figma connected — Home Screen built</span>
+        <span class="pill on">Admin Panel core live — Categories + Shops</span>
+        <span class="pill on">19 demo shops seeded (Beirut)</span>
+        <span class="pill open">zabetna.com not connected anywhere</span>
         <span class="pill open">20 of 21 User App screens remaining</span>
       </div>
       <div class="callout">
@@ -417,13 +419,12 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           </ul>
         </div>
         <div class="card">
-          <h4>Admin Panel</h4>
-          <p>Operations-facing, web-based. Runs the platform: onboarding, content, and oversight.</p>
+          <h4>Admin Panel <span class="pill on" style="margin-left:.4rem">core live</span></h4>
+          <p>Operations-facing, web-based (Next.js). Runs the platform: onboarding, content, and oversight.</p>
           <ul>
-            <li>Shop onboarding &amp; approval, category management</li>
-            <li>Banners, featured listings (top 3 per category)</li>
-            <li>Overall + per-shop reporting</li>
-            <li>Admin users with role-scoped permissions</li>
+            <li><b>Live:</b> RBAC-aware login; category management (add/edit/delete, drag-free up/down reorder, icon picker from a 30-icon set)</li>
+            <li><b>Live:</b> shop onboarding — name, category, description, address, phone, status, and an interactive map pin (Leaflet/OpenStreetMap, no API key) for the exact geolocation</li>
+            <li><b>Not yet built:</b> banners, featured listings (top 3/category), overall + per-shop reporting, admin user invite/permission management — all stubbed as "Coming Soon" behind the same RBAC gates</li>
           </ul>
         </div>
       </div>
@@ -639,11 +640,12 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           </div>
         </div>
         <div class="phase">
-          <div class="ph-label"><b>01</b></div>
+          <div class="ph-label"><b>01</b>In progress</div>
           <div>
             <h4>Admin core</h4>
             <p>Admin auth, role/permission system, category CRUD, shop onboarding &amp; approval queue, admin user management.</p>
-            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database.</div>
+            <p style="margin-top:.5rem"><b>Live:</b> RBAC-gated login, category CRUD + reorder + icon picker, shop onboarding with map-picked geolocation, 19 real demo shops seeded (Beirut). <b>Remaining:</b> shop approval workflow (all demo shops are pre-set to "active"), banners, reporting, admin user invite/permission UI.</p>
+            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database. <b>Shop onboarding itself: done.</b> Approval workflow, banners, reporting, and admin management remain.</div>
           </div>
         </div>
         <div class="phase">
@@ -701,7 +703,11 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <tr><td class="key">Redemption verification</td><td>QR code, single-use, time-boxed token</td><td>2026-08-29</td></tr>
           <tr><td class="key">Design source</td><td>Figma file "Zabetna (Copy)" — connected; 21 screens inventoried across Splash/Onboarding (5), Auth (5), Main (11)</td><td>2026-08-29</td></tr>
           <tr><td class="key">Supabase project</td><td><code>albnccpmvwocmizxgfoh</code> · ap-south-1 · free tier ($0/mo) — a pre-existing unrelated project in the same org was found and deliberately not reused</td><td>2026-08-29</td></tr>
-          <tr><td class="key">Icons</td><td>Ionicons (via @expo/vector-icons), mapped to the closest equivalent per Figma icon rather than pixel-matching each source icon library — keeps one scalable font instead of a folder of loose SVGs</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Icons</td><td>Ionicons (via @expo/vector-icons) for the User App; lucide-react for the Admin Panel — mapped to the closest equivalent per Figma icon rather than pixel-matching each source icon library</td><td>2026-08-29</td></tr>
+          <tr><td class="key">zabetna.com domain</td><td>Registered, but not connected to this (or any) Supabase project, and not attached to any current Vercel project in this account — confirmed by checking Supabase project settings and every Vercel project's domain list. Needs to be pointed here explicitly, or a new domain purchased, before launch.</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Shop location picker</td><td>Free interactive map (Leaflet + OpenStreetMap tiles), not the Google Maps API — no API key/billing required. Chosen over Google Maps explicitly (Mo's call) to avoid a billing dependency this early; can be swapped later if geocoding-by-address becomes a requirement.</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Demo data</td><td>19 real, named Beirut businesses across all 8 categories (Em Sherif, Tawlet, The Music Hall, ABC Achrafieh, etc.), researched via web search rather than invented — not synthetic "Shop 1/Shop 2" rows. Coordinates are neighborhood-level approximations (no geocoding API used); each pin should be corrected via the admin map picker before real users see it.</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Prior "Zabetna" projects</td><td>A GitHub org (MoeZabetna) and several Vercel projects from June 2025 were found during the domain check. Confirmed with Mo as abandoned — deliberately not reused or migrated from.</td><td>2026-08-29</td></tr>
         </table>
       </div>
     </section>
@@ -709,8 +715,26 @@ td.key, td strong{color:var(--ink); font-weight:600;}
     <section id="open">
       <div class="eyebrow">08 — Open items</div>
       <h2>What's left</h2>
-      <p>Figma and Supabase are both connected now, so foundation is unblocked. What remains is real build volume, plus product questions I still shouldn't decide for you.</p>
+      <p>Figma and Supabase are both connected now, so foundation is unblocked. What remains is real build volume, one manual dashboard action, plus product questions I still shouldn't decide for you.</p>
       <div class="grid2">
+        <div class="card">
+          <h4>Admin Panel still to build</h4>
+          <ul>
+            <li>Banners (in-app promotional banners, scheduling, active/inactive)</li>
+            <li>Featured listings — pin top 3 shops per category</li>
+            <li>Reporting — overall + per-shop redemption dashboards, CSV export</li>
+            <li>Admin user management — invite, assign role, deactivate (the role/permission engine underneath already exists and is enforced by RLS; only the UI for managing it is missing)</li>
+            <li>Shop approval queue — right now every shop is created as "active" directly; a pending → approved workflow for self-service onboarding isn't built</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h4>Needs a human, not a developer</h4>
+          <ul>
+            <li><b>zabetna.com</b> is not pointed at anything — decide whether to connect the existing registration to this Vercel/Supabase project or buy a fresh domain</li>
+            <li><b>Supabase Auth advisory:</b> "Leaked password protection" is currently disabled on the live project. It's a one-click toggle in the Supabase dashboard (Authentication → Policies) — no MCP tool exposes it, so this can't be done from here</li>
+            <li><b>Bootstrap admin password</b> (<code>muhamad.itani@gmail.com</code>) was set programmatically as a one-time seed — change it after first login</li>
+          </ul>
+        </div>
         <div class="card">
           <h4>User App screens still to build</h4>
           <ul>
@@ -724,13 +748,13 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <ul>
             <li>Language(s): Arabic and English both, given the name and market? Affects the schema (translatable fields) from day one — much cheaper to decide now than retrofit.</li>
             <li>Business model: is a shop's listing free, commission-per-redemption, or a flat subscription? Affects the admin panel's shop record and reporting.</li>
-            <li>Market/currency: single city (Dubai) or multi-city/country from launch?</li>
+            <li>Market/currency: Beirut/Lebanon first (per the demo data) — single city or multi-city/country from launch?</li>
             <li>Home Screen's photo content (banner + shop photos) is placeholder — real Figma stock photos couldn't be pulled into this build (network policy) and will need to come from real onboarded shops anyway.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <div class="footline">Zabetna — Blueprint v0.1 — this document is the plan, not the product. Next: repo scaffold + schema migrations, in parallel with Figma access.</div>
+    <div class="footline">Zabetna — Blueprint v0.2 — this document is the plan, not the product. Next: finish Admin Panel (banners, reporting, admin management, approval queue), then User App MVP screens.</div>
   </main>
 </div>

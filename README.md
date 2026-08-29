@@ -27,12 +27,30 @@ docs/
 
 ## Status
 
-Supabase project `albnccpmvwocmizxgfoh` (ap-south-1) is live with the full
-schema + RLS applied and passing the security advisor clean. Figma is
-connected. The User App's Home Screen is built and bundles successfully
-(`npx expo export`, verified). Everything else — the other 20 User App
-screens, the whole Restaurant App, and the whole Admin Panel — is still
-scaffold only. See §06 and §08 of the blueprint for the real remaining list.
+Supabase project `albnccpmvwocmizxgfoh` (ap-south-1) is live: full schema +
+RLS applied, 8 categories seeded, 19 real Beirut demo shops seeded across all
+categories, one bootstrap Super Admin account. Security advisor is clean
+except one item that needs a human: **leaked-password protection is
+disabled** — toggle it in the Supabase dashboard under Authentication →
+Policies; no MCP/API tool exposes that setting.
+
+**Admin Panel**: login (RBAC-aware) and Categories (add/edit/delete/reorder/
+icon) and Shops (add/edit/delete/category/status/map-picked location) are
+live and verified with `next build`. Banners, Reporting, and Admin user
+management are stub "Coming Soon" pages, gated behind the same permissions,
+not yet implemented.
+
+**User App**: Home Screen is built and bundles successfully (`npx expo
+export`, verified). The other 20 screens are not built.
+
+**Restaurant App**: still the default Expo template — not started.
+
+**zabetna.com**: registered, but not connected to this Supabase project or
+to any current Vercel project in this account. Needs a decision — point the
+existing domain here, or buy a new one — before launch.
+
+See §01, §06, §07, §08 of the blueprint for the full detail and the product
+questions still open.
 
 `.env` files with the live project's URL and publishable (anon) key are
 already committed for all three apps — that key is meant to be public in a
@@ -45,8 +63,16 @@ ever goes to a public host.
 pnpm install
 pnpm user-app             # expo start — Home Screen renders
 pnpm restaurant-app        # expo start — default Expo template, not yet built
-pnpm admin                  # next dev — default Next.js template, not yet built
+pnpm admin                  # next dev — Categories + Shops management live
 
 pnpm types:generate      # regenerate packages/shared-types/src/database.ts after any schema change
 pnpm db:push              # apply new supabase/migrations
 ```
+
+### Admin Panel login
+
+The bootstrap Super Admin can sign in at `/login` with
+`muhamad.itani@gmail.com` and the temporary password set in
+`supabase/migrations/0004_bootstrap_super_admin.sql` — change it after first
+login (there's no self-serve reset flow yet; use the Supabase dashboard in
+the meantime).
