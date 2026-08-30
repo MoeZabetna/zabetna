@@ -3,16 +3,25 @@ import { Ionicons } from "@expo/vector-icons";
 import { color, radius } from "../theme";
 import type { IoniconName } from "../types/home";
 
-export type NavKey = "home" | "categories" | "profile";
+export type NavKey = "home" | "categories" | "rewards" | "profile";
 
 const TABS: { key: NavKey; icon: IoniconName }[] = [
   { key: "home", icon: "home-outline" },
   { key: "categories", icon: "grid-outline" },
+  { key: "rewards", icon: "card-outline" },
   { key: "profile", icon: "person-outline" },
 ];
 
 // Floating pill nav (data-node-id 56:361) — purple bar, active tile in
-// skyblue. Only Home/Categories/Profile are wired to a screen so far; see
+// skyblue. Resized from 3 to 4 tiles (255px -> 327px) in Figma on
+// 2026-08-30 to add the Rewards tab: the master component (56:357) was
+// edited directly, so it propagated to every existing instance
+// (Home/Categories/Profile/Shops/Menu screens) automatically. The new
+// tile reuses the file's own "material-symbols-light:card-membership"
+// icon, which had been sitting hidden/unwired in the component since
+// before this session — hence "card-outline" here rather than a gift
+// icon, to stay visually consistent with what's actually in Figma.
+// Only Home/Categories/Profile are wired to a screen so far; see
 // docs/blueprint.html §06 for the rest of the Main Screens set.
 export function BottomNav({ active, onSelect }: { active: NavKey; onSelect?: (key: NavKey) => void }) {
   return (
@@ -39,7 +48,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     alignSelf: "center",
-    width: 255,
+    width: 327,
     height: 68,
     paddingHorizontal: 8,
     borderRadius: radius.md,
