@@ -3,10 +3,11 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2, ImageOff, FileText, Search } from "lucide-react";
+import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2, ImageOff, FileText, Search, Users } from "lucide-react";
 import { createShop, updateShop, deleteShop, type ShopInput } from "./actions";
 import { BannerImagePicker } from "@/components/BannerImagePicker";
 import { MenuUploader } from "@/components/MenuUploader";
+import { StaffModal, type StaffRow } from "./StaffManager";
 
 // Leaflet touches `window` at import time — must be client-only, and
 // next/dynamic's ssr:false only works when called from a "use client" file,
@@ -53,14 +54,17 @@ export function ShopsManager({
   categories,
   canManage,
   offerStatsByShop,
+  staffByShop,
 }: {
   initialShops: ShopRow[];
   categories: { id: string; name: string }[];
   canManage: boolean;
   offerStatsByShop: Record<string, { active: number; inactive: number }>;
+  staffByShop: Record<string, StaffRow[]>;
 }) {
   const [shops, setShops] = useState(initialShops);
   const [editing, setEditing] = useState<ShopRow | "new" | null>(null);
+  const [managingStaff, setManagingStaff] = useState<ShopRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -200,16 +204,28 @@ export function ShopsManager({
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  {canManage && (
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setEditing(shop)} className="text-neutral-400 hover:text-neutral-900">
-                        <Pencil size={16} />
-                      </button>
-                      <button onClick={() => remove(shop.id)} className="text-neutral-400 hover:text-red-600">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={() => setManagingStaff(shop)}
+                      className="flex items-center gap-1 text-neutral-400 hover:text-neutral-900"
+                      title="Manage staff"
+                    >
+                      <Users size={16} />
+                      {(staffByShop[shop.id]?.length ?? 0) > 0 && (
+                        <span className="text-xs text-neutral-500">{staffByShop[shop.id]?.length}</span>
+                      )}
+                    </button>
+                    {canManage && (
+                      <>
+                        <button onClick={() => setEditing(shop)} className="text-neutral-400 hover:text-neutral-900">
+                          <Pencil size={16} />
+                        </button>
+                        <button onClick={() => remove(shop.id)} className="text-neutral-400 hover:text-red-600">
+                          <Trash2 size={16} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
               );
@@ -233,6 +249,16 @@ export function ShopsManager({
             setShops((prev) => (editing === "new" ? [saved, ...prev] : prev.map((s) => (s.id === saved.id ? saved : s))));
             setEditing(null);
           }}
+        />
+      )}
+
+      {managingStaff && (
+        <StaffModal
+          shopId={managingStaff.id}
+          shopName={managingStaff.name}
+          initialStaff={staffByShop[managingStaff.id] ?? []}
+          canManage={canManage}
+          onClose={() => setManagingStaff(null)}
         />
       )}
     </div>

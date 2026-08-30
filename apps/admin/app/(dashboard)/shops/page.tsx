@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentAdmin, hasPermission } from "@/lib/auth/current-admin";
 import { ShopsManager } from "./ShopsManager";
+import type { StaffRow } from "./StaffManager";
 
 export default async function ShopsPage() {
   const admin = await getCurrentAdmin();
   const supabase = await createClient();
 
-  const [{ data: shops }, { data: categories }, { data: offerCounts }] = await Promise.all([
+  const [{ data: shops }, { data: categories }, { data: offerCounts }, { data: staffRows }] = await Promise.all([
     supabase
       .from("shops")
       .select(
@@ -15,7 +16,20 @@ export default async function ShopsPage() {
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name").order("sort_order", { ascending: true }),
     supabase.from("offers").select("shop_id, status, start_at, end_at"),
+    supabase
+      .from("shop_staff")
+      .select("id, shop_id, full_name, email, role, status, created_at")
+      .order("created_at", { ascending: true }),
   ]);
+
+  // Same "load everything upfront" pattern as offerStatsByShop below — the
+  // shop list is small enough that per-shop staff rosters cost nothing to
+  // preload, and it lets the Staff modal open instantly with no per-click
+  // fetch.
+  const staffByShop = (staffRows ?? []).reduce<Record<string, StaffRow[]>>((acc, row) => {
+    (acc[row.shop_id] ??= []).push(row as StaffRow);
+    return acc;
+  }, {});
 
   // Per-shop offer visibility for the two columns ShopsManager shows next to
   // each row: how many offers are genuinely live right now, and how many
@@ -55,6 +69,7 @@ export default async function ShopsPage() {
         categories={categories ?? []}
         canManage={hasPermission(admin, "shops.manage")}
         offerStatsByShop={offerStatsByShop}
+        staffByShop={staffByShop}
       />
     </div>
   );

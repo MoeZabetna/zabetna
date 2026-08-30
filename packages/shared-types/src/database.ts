@@ -600,6 +600,8 @@ export type Database = {
         Row: {
           auth_user_id: string
           created_at: string
+          email: string
+          full_name: string
           id: string
           role: Database["public"]["Enums"]["staff_role"]
           shop_id: string
@@ -608,6 +610,8 @@ export type Database = {
         Insert: {
           auth_user_id: string
           created_at?: string
+          email: string
+          full_name: string
           id?: string
           role?: Database["public"]["Enums"]["staff_role"]
           shop_id: string
@@ -616,6 +620,8 @@ export type Database = {
         Update: {
           auth_user_id?: string
           created_at?: string
+          email?: string
+          full_name?: string
           id?: string
           role?: Database["public"]["Enums"]["staff_role"]
           shop_id?: string
