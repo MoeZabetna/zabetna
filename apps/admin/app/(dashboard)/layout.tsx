@@ -6,10 +6,10 @@ import { SignOutButton } from "@/components/SignOutButton";
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const admin = await getCurrentAdmin();
 
-  // middleware.ts already guarantees a Supabase session exists here — this
-  // catches the narrower case of a session that isn't an *admin* (no
-  // admin_users row, or a suspended one), which middleware can't check
-  // without an extra DB round trip on every request.
+  // proxy.ts (formerly middleware.ts) already guarantees a Supabase session
+  // exists here — this catches the narrower case of a session that isn't an
+  // *admin* (no admin_users row, or a suspended one), which the proxy can't
+  // check without an extra DB round trip on every request.
   if (!admin) {
     redirect("/login");
   }

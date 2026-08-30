@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { LoginForm } from "@/components/LoginForm";
 
-// NOTE: there is deliberately no middleware.ts doing auth in this app —
-// middleware.ts is a permanent no-op (see its own comment for the full
-// incident history — a Next.js Edge Runtime bundling bug, not fixable from
-// application code).
+// NOTE: there is deliberately no proxy.ts (formerly middleware.ts) doing
+// auth in this app — proxy.ts is a permanent no-op (see its own comment for
+// the full incident history: a Next.js Edge Runtime bundling bug that
+// required renaming middleware.ts -> proxy.ts, plus a separate Vercel
+// Framework Preset issue that caused sitewide 404s after that).
 //
 // Auth is enforced entirely by Server Components — the same
 // createServerClient code runs correctly here and in
@@ -13,7 +14,7 @@ import { LoginForm } from "@/components/LoginForm";
 // every dashboard route. This page's job is just the UX nicety of bouncing
 // an already-logged-in admin away from /login.
 //
-// Trade-off worth knowing: Supabase's own guidance recommends middleware
+// Trade-off worth knowing: Supabase's own guidance recommends middleware/proxy
 // specifically so it can refresh the session cookie on every request.
 // Without that, a Server Component can read cookies but not write refreshed
 // ones back to the browser (see lib/supabase/server.ts). In practice this is
