@@ -658,8 +658,8 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <div>
             <h4>Admin core</h4>
             <p>Admin auth, role/permission system, category CRUD, shop onboarding &amp; approval queue, admin user management.</p>
-            <p style="margin-top:.5rem"><b>Live:</b> RBAC-gated login, category CRUD + reorder + icon picker, shop onboarding with map-picked geolocation, 19 real demo shops seeded (Beirut), per-shop redemption fee + Reports (2026-08-30), offer minimum-order display (2026-08-30), Users tab + Reward Program tab — points/loyalty payouts, admin-confirmed against a manual Wish Money transfer (2026-08-30, see docs/rewards-program.md). <b>Remaining:</b> shop approval workflow (all demo shops are pre-set to "active"), banners, CSV export, admin user invite/permission UI.</p>
-            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database. <b>Shop onboarding itself: done.</b> Approval workflow, banners, and admin management remain.</div>
+            <p style="margin-top:.5rem"><b>Live:</b> RBAC-gated login, category CRUD + reorder + icon picker, shop onboarding with map-picked geolocation, 19 real demo shops seeded (Beirut), per-shop redemption fee + Reports (2026-08-30), offer minimum-order display (2026-08-30), Users tab + Reward Program tab — points/loyalty payouts, admin-confirmed against a manual Wish Money transfer (2026-08-30, see docs/rewards-program.md), Admins tab — invite/role/suspend + self-service password change (2026-08-30, code done, invite blocked on a missing env var — see docs/admin-management.md). <b>Remaining:</b> shop approval workflow (all demo shops are pre-set to "active"), banners, CSV export, and adding <code>SUPABASE_SERVICE_ROLE_KEY</code> so inviting an admin actually works.</p>
+            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database. <b>Shop onboarding itself: done.</b> Approval workflow and banners remain.</div>
           </div>
         </div>
         <div class="phase">
@@ -725,6 +725,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <tr><td class="key">Business model</td><td>Commission-per-redemption: each shop has a <code>value_per_redemption</code> (USD, admin-editable). The fee is locked onto each redemption row at the moment it's verified (a DB trigger copies the shop's <em>current</em> rate at that instant), not recomputed later from the shop's rate — so a shop's amount owed for redemptions that already happened never silently changes if their rate is renegotiated afterward. See docs/vendor-app-fee-reporting.md.</td><td>2026-08-30</td></tr>
           <tr><td class="key">Minimum order condition</td><td><code>offers.minimum_order_value</code> is a structured USD field (0 = none), not free text in the offer description — shown to users so they know a shop requires a minimum order to redeem. Display-only: no order/purchase amount is captured anywhere in the schema today, so it isn't enforced automatically.</td><td>2026-08-30</td></tr>
           <tr><td class="key">Points / rewards rate</td><td>1 point per verified redemption, $0.25/point, 40-point ($10.00) minimum before a payout can be requested. Cash-out always sweeps the user's full available balance (no partial-amount picker). Admin manually wires the payout via Wish Money, then confirms in the admin panel — confirming records that the transfer happened, it doesn't send it. See docs/rewards-program.md.</td><td>2026-08-30</td></tr>
+          <tr><td class="key">Admin invite flow</td><td>New admin logins are created via the Supabase Auth Admin API (service-role key, server-only) with a random temporary password shown once to the inviting Super Admin — not an email invite link, since no email-sending service exists in this codebase. Requires <code>SUPABASE_SERVICE_ROLE_KEY</code> to be configured by hand; not usable until that's done. See docs/admin-management.md.</td><td>2026-08-30</td></tr>
         </table>
       </div>
     </section>
@@ -741,7 +742,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
             <li>Featured listings — pin top 3 shops per category</li>
             <li>Reporting — <s>overall admin dashboards</s> done (2026-08-30): Reports → Overall Redemption (filterable by category/shop/city, sortable) + Daily Performance (hour × day-of-week heatmap). Still open: CSV export, and the per-shop vendor/shops-app dashboard — see docs/vendor-app-fee-reporting.md for what that needs</li>
             <li><s>Users tab</s> and <s>Reward Program tab</s> done (2026-08-30) — registered users, points earned/available, and Wish Money payout requests with Confirm/Reject. See docs/rewards-program.md.</li>
-            <li>Admin user management — invite, assign role, deactivate (the role/permission engine underneath already exists and is enforced by RLS; only the UI for managing it is missing — this is also the only way today to grant <code>rewards.manage</code> to a role other than Super Admin)</li>
+            <li><s>Admin user management</s> — invite, assign role, suspend/reactivate, plus a "Change password" self-service control for every admin (2026-08-30). Code is done, but <b>inviting a new admin doesn't fully work yet</b>: it needs <code>SUPABASE_SERVICE_ROLE_KEY</code> configured in Vercel + local env, which nobody has set up — this is the one remaining manual step, not a code gap. See docs/admin-management.md. This is also now the way to grant <code>rewards.manage</code> to a role other than Super Admin, once it works.</li>
             <li>Shop approval queue — right now every shop is created as "active" directly; a pending → approved workflow for self-service onboarding isn't built</li>
           </ul>
         </div>
@@ -750,7 +751,8 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <ul>
             <li><b>zabetna.com</b> is not pointed at anything — decide whether to connect the existing registration to this Vercel/Supabase project or buy a fresh domain</li>
             <li><b>Supabase Auth advisory:</b> "Leaked password protection" is currently disabled on the live project. It's a one-click toggle in the Supabase dashboard (Authentication → Policies) — no MCP tool exposes it, so this can't be done from here</li>
-            <li><b>Bootstrap admin password</b> (<code>muhamad.itani@gmail.com</code>) was set programmatically as a one-time seed — change it after first login</li>
+            <li><b>Bootstrap admin password</b> (<code>muhamad.itani@gmail.com</code>) was set programmatically as a one-time seed — change it via the admin panel's own "Change password" now that it exists (2026-08-30)</li>
+            <li><b><code>SUPABASE_SERVICE_ROLE_KEY</code></b> needs to be added to Vercel + local env for the Admins tab's "Add admin" to work — it's a full-database-bypass credential, so it can only be set by hand from the Supabase dashboard, never by an agent. See docs/admin-management.md.</li>
           </ul>
         </div>
         <div class="card">

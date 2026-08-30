@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentAdmin } from "@/lib/auth/current-admin";
 import { Sidebar } from "@/components/Sidebar";
 import { SignOutButton } from "@/components/SignOutButton";
+import { ChangePasswordButton } from "@/components/ChangePasswordButton";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const admin = await getCurrentAdmin();
@@ -22,7 +23,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
           <div className="text-sm text-neutral-500">
             <span className="font-medium text-neutral-900">{admin.fullName}</span> · {admin.roleName}
           </div>
-          <SignOutButton />
+          <div className="flex items-center gap-4">
+            <ChangePasswordButton email={admin.email} />
+            <SignOutButton />
+          </div>
         </header>
         <main className="p-6">{children}</main>
       </div>
