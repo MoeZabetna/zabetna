@@ -1,4 +1,4 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { createClient, FunctionsHttpError, type SupabaseClient } from "@supabase/supabase-js";
 import type { RedemptionToken } from "@zabetna/shared-types";
 
 /**
@@ -29,18 +29,51 @@ export async function createRedemption(
   return data as RedemptionToken;
 }
 
+export type VerifyRedemptionResult =
+  | { status: "verified"; offerTitle: string }
+  | { status: "rejected"; reason: string };
+
 /**
- * Restaurant App: verify a scanned token. Calls `verify_redemption`, which
- * enforces the shop match, expiry, and single-use checks described in
- * docs/blueprint.html §04 at the database layer.
+ * Restaurant App: verify a scanned or manually-entered token. Calls
+ * `verify-redemption`, which enforces the shop match, expiry, and
+ * single-use checks described in docs/blueprint.html §04 at the database
+ * layer.
+ *
+ * `verify-redemption` returns every rejection (wrong shop, already used,
+ * expired, unrecognized code, not signed in) as a non-2xx HTTP status with
+ * a `{status:"rejected", reason:"..."}` JSON body — that's the whole point,
+ * so the Restaurant App can show staff *why* a code didn't work. The
+ * Supabase client's `functions.invoke` treats any non-2xx response as a
+ * `FunctionsHttpError` and discards the body from `data`, so without this
+ * catch every single rejection would surface here as a generic thrown
+ * error instead of the specific reason — read it back off
+ * `error.context` (the raw Response) instead of losing it.
  */
-export async function verifyRedemption(
-  client: SupabaseClient,
-  token: string
-): Promise<{ status: "verified"; offerTitle: string } | { status: "rejected"; reason: string }> {
+export async function verifyRedemption(client: SupabaseClient, token: string): Promise<VerifyRedemptionResult> {
   const { data, error } = await client.functions.invoke("verify-redemption", {
     body: { token },
   });
-  if (error) throw error;
-  return data;
+
+  if (error) {
+    // `error.context` is the raw fetch Response, typed `any` on
+    // FunctionsError since this package has no DOM lib (it's shared with
+    // React Native, which has no DOM lib either) — duck-type it instead of
+    // `instanceof Response` so this compiles under both runtimes, which do
+    // both have a real Response global at execution time.
+    const context = (error as { context?: unknown }).context as { clone?: () => { json: () => Promise<unknown> } } | undefined;
+    if (error instanceof FunctionsHttpError && context && typeof context.clone === "function") {
+      try {
+        const body = (await context.clone().json()) as { status?: string; reason?: unknown };
+        if (body && body.status === "rejected" && typeof body.reason === "string") {
+          return body as VerifyRedemptionResult;
+        }
+      } catch {
+        // Body wasn't JSON (or was already consumed) — fall through to the
+        // generic message below rather than pretending we parsed it.
+      }
+    }
+    throw error;
+  }
+
+  return data as VerifyRedemptionResult;
 }
