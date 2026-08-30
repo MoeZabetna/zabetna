@@ -76,3 +76,20 @@ The bootstrap Super Admin can sign in at `/login` with
 `supabase/migrations/0004_bootstrap_super_admin.sql` — change it after first
 login (there's no self-serve reset flow yet; use the Supabase dashboard in
 the meantime).
+
+## Deployment (Admin Panel)
+
+Hosted on Vercel, project `zabetna-admin-v2`, connected to this GitHub repo
+(`MoeZabetna/zabetna`, production branch `master`). Since this is a
+monorepo, Vercel's **Root Directory must be `apps/admin`** and **Framework
+Preset must be `Next.js`** (both are project settings, not files in this
+repo — check them in the Vercel dashboard if a deploy ever 404s sitewide
+with a clean build). A parallel Render config also exists
+(`render.yaml`, service `zabetna-admin`) as a fallback host, not currently
+the primary.
+
+If anything about deploys here looks broken, read
+[`docs/incidents/2026-08-30-admin-panel-outage.md`](docs/incidents/2026-08-30-admin-panel-outage.md)
+first — it's a real postmortem of a ~12-hour outage on this exact app and
+covers three separate root causes that all produced the same "site is
+down" symptom.
