@@ -9,6 +9,8 @@ export interface ShopInput {
   description: string;
   address: string;
   phone: string;
+  city: string;
+  valuePerRedemption: number | null;
   lat: number | null;
   lng: number | null;
   status: "pending" | "active" | "suspended";
@@ -28,6 +30,8 @@ export async function createShop(input: ShopInput) {
     description: input.description || null,
     address: input.address || null,
     phone: input.phone || null,
+    city: input.city || "Beirut",
+    value_per_redemption: input.valuePerRedemption,
     lat: input.lat,
     lng: input.lng,
     status: input.status,
@@ -48,6 +52,8 @@ export async function updateShop(id: string, input: ShopInput) {
       description: input.description || null,
       address: input.address || null,
       phone: input.phone || null,
+      city: input.city || "Beirut",
+      value_per_redemption: input.valuePerRedemption,
       lat: input.lat,
       lng: input.lng,
       status: input.status,

@@ -668,7 +668,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <div class="ph-label"><b>04</b></div>
           <div>
             <h4>Reporting</h4>
-            <p>Per-shop dashboard (their own redemptions only, via RLS), overall admin reporting, CSV export.</p>
+            <p>Overall admin reporting done (2026-08-30, Admin Panel → Reports). Still open: per-shop dashboard for the shops/vendor app (their own redemptions only, via RLS — see docs/vendor-app-fee-reporting.md), CSV export.</p>
             <div class="done">Done when: a shop owner and Super Admin can both answer "how many redemptions this week" without asking a developer.</div>
           </div>
         </div>
@@ -708,6 +708,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <tr><td class="key">Shop location picker</td><td>Free interactive map (Leaflet + OpenStreetMap tiles), not the Google Maps API — no API key/billing required. Chosen over Google Maps explicitly (Mo's call) to avoid a billing dependency this early; can be swapped later if geocoding-by-address becomes a requirement.</td><td>2026-08-29</td></tr>
           <tr><td class="key">Demo data</td><td>19 real, named Beirut businesses across all 8 categories (Em Sherif, Tawlet, The Music Hall, ABC Achrafieh, etc.), researched via web search rather than invented — not synthetic "Shop 1/Shop 2" rows. Coordinates are neighborhood-level approximations (no geocoding API used); each pin should be corrected via the admin map picker before real users see it.</td><td>2026-08-29</td></tr>
           <tr><td class="key">Prior "Zabetna" projects</td><td>A GitHub org (MoeZabetna) and several Vercel projects from June 2025 were found during the domain check. Confirmed with Mo as abandoned — deliberately not reused or migrated from.</td><td>2026-08-29</td></tr>
+          <tr><td class="key">Business model</td><td>Commission-per-redemption: each shop has a <code>value_per_redemption</code> (USD, admin-editable). The fee is locked onto each redemption row at the moment it's verified (a DB trigger copies the shop's <em>current</em> rate at that instant), not recomputed later from the shop's rate — so a shop's amount owed for redemptions that already happened never silently changes if their rate is renegotiated afterward. See docs/vendor-app-fee-reporting.md.</td><td>2026-08-30</td></tr>
         </table>
       </div>
     </section>
@@ -722,7 +723,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <ul>
             <li>Banners (in-app promotional banners, scheduling, active/inactive)</li>
             <li>Featured listings — pin top 3 shops per category</li>
-            <li>Reporting — overall + per-shop redemption dashboards, CSV export</li>
+            <li>Reporting — <s>overall admin dashboards</s> done (2026-08-30): Reports → Overall Redemption (filterable by category/shop/city, sortable) + Daily Performance (hour × day-of-week heatmap). Still open: CSV export, and the per-shop vendor/shops-app dashboard — see docs/vendor-app-fee-reporting.md for what that needs</li>
             <li>Admin user management — invite, assign role, deactivate (the role/permission engine underneath already exists and is enforced by RLS; only the UI for managing it is missing)</li>
             <li>Shop approval queue — right now every shop is created as "active" directly; a pending → approved workflow for self-service onboarding isn't built</li>
           </ul>
@@ -747,8 +748,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <h4>Product questions, not yet decided</h4>
           <ul>
             <li>Language(s): Arabic and English both, given the name and market? Affects the schema (translatable fields) from day one — much cheaper to decide now than retrofit.</li>
-            <li>Business model: is a shop's listing free, commission-per-redemption, or a flat subscription? Affects the admin panel's shop record and reporting.</li>
-            <li>Market/currency: Beirut/Lebanon first (per the demo data) — single city or multi-city/country from launch?</li>
+            <li>Market/currency: Beirut/Lebanon first (per the demo data) — single city or multi-city/country from launch? <code>shops.city</code> is already free text rather than a locked enum specifically so this doesn't need retrofitting later, but the question itself is still open.</li>
             <li>Home Screen's photo content (banner + shop photos) is placeholder — real Figma stock photos couldn't be pulled into this build (network policy) and will need to come from real onboarded shops anyway.</li>
           </ul>
         </div>

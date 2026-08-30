@@ -10,7 +10,7 @@ export default async function ShopsPage() {
     supabase
       .from("shops")
       .select(
-        "id, name, category_id, description, address, phone, lat, lng, status, banner_image_url, menu_images, categories(name)"
+        "id, name, category_id, description, address, phone, city, value_per_redemption, lat, lng, status, banner_image_url, menu_images, categories(name)"
       )
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name").order("sort_order", { ascending: true }),

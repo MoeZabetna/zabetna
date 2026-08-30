@@ -415,6 +415,7 @@ export type Database = {
         Row: {
           created_at: string
           expires_at: string
+          fee_amount_usd: number | null
           id: string
           offer_id: string
           shop_id: string
@@ -427,6 +428,7 @@ export type Database = {
         Insert: {
           created_at?: string
           expires_at?: string
+          fee_amount_usd?: number | null
           id?: string
           offer_id: string
           shop_id: string
@@ -439,6 +441,7 @@ export type Database = {
         Update: {
           created_at?: string
           expires_at?: string
+          fee_amount_usd?: number | null
           id?: string
           offer_id?: string
           shop_id?: string
@@ -549,6 +552,7 @@ export type Database = {
           address: string | null
           banner_image_url: string | null
           category_id: string
+          city: string
           cover_images: string[]
           created_at: string
           description: string | null
@@ -562,11 +566,13 @@ export type Database = {
           phone: string | null
           status: Database["public"]["Enums"]["shop_status"]
           updated_at: string
+          value_per_redemption: number | null
         }
         Insert: {
           address?: string | null
           banner_image_url?: string | null
           category_id: string
+          city?: string
           cover_images?: string[]
           created_at?: string
           description?: string | null
@@ -580,11 +586,13 @@ export type Database = {
           phone?: string | null
           status?: Database["public"]["Enums"]["shop_status"]
           updated_at?: string
+          value_per_redemption?: number | null
         }
         Update: {
           address?: string | null
           banner_image_url?: string | null
           category_id?: string
+          city?: string
           cover_images?: string[]
           created_at?: string
           description?: string | null
@@ -598,6 +606,7 @@ export type Database = {
           phone?: string | null
           status?: Database["public"]["Enums"]["shop_status"]
           updated_at?: string
+          value_per_redemption?: number | null
         }
         Relationships: [
           {
@@ -611,7 +620,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      verified_redemptions: {
+        Row: {
+          category_id: string | null
+          category_name: string | null
+          city: string | null
+          dow_beirut: number | null
+          fee_amount_usd: number | null
+          hour_beirut: number | null
+          id: string | null
+          shop_id: string | null
+          shop_name: string | null
+          verified_at: string | null
+          verified_at_beirut: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_shop_id_fkey"
+            columns: ["shop_id"]
+            isOneToOne: false
+            referencedRelation: "shops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shops_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       has_permission: { Args: { perm_key: string }; Returns: boolean }

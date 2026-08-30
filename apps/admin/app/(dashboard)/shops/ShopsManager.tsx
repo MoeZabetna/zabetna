@@ -27,6 +27,8 @@ export interface ShopRow {
   description: string | null;
   address: string | null;
   phone: string | null;
+  city: string;
+  value_per_redemption: number | null;
   lat: number | null;
   lng: number | null;
   status: "pending" | "active" | "suspended";
@@ -127,6 +129,7 @@ export function ShopsManager({
                 </td>
                 <td className="px-4 py-3 text-neutral-600">{categoryName(shop)}</td>
                 <td className="px-4 py-3 text-neutral-600">
+                  <div className="text-xs text-neutral-500">{shop.city}</div>
                   {shop.lat && shop.lng ? (
                     <a
                       className="flex items-center gap-1 text-neutral-600 hover:text-neutral-900"
@@ -233,6 +236,10 @@ function ShopFormModal({
   const [description, setDescription] = useState(shop?.description ?? "");
   const [address, setAddress] = useState(shop?.address ?? "");
   const [phone, setPhone] = useState(shop?.phone ?? "");
+  const [city, setCity] = useState(shop?.city ?? "Beirut");
+  const [valuePerRedemption, setValuePerRedemption] = useState(
+    shop?.value_per_redemption != null ? String(shop.value_per_redemption) : ""
+  );
   const [status, setStatus] = useState<ShopRow["status"]>(shop?.status ?? "pending");
   const [lat, setLat] = useState(shop?.lat ?? BEIRUT_CENTER[0]);
   const [lng, setLng] = useState(shop?.lng ?? BEIRUT_CENTER[1]);
@@ -250,6 +257,12 @@ function ShopFormModal({
       setError("A banner image is required — it's used as the header image on the shop's page.");
       return;
     }
+    const trimmedFee = valuePerRedemption.trim();
+    const parsedFee = trimmedFee === "" ? null : Number(trimmedFee);
+    if (trimmedFee !== "" && (!Number.isFinite(parsedFee) || (parsedFee as number) < 0)) {
+      setError("Value per redemption must be a non-negative number.");
+      return;
+    }
     setSaving(true);
     setError(null);
 
@@ -259,6 +272,8 @@ function ShopFormModal({
       description,
       address,
       phone,
+      city,
+      valuePerRedemption: parsedFee,
       lat,
       lng,
       status,
@@ -277,6 +292,8 @@ function ShopFormModal({
       description: description || null,
       address: address || null,
       phone: phone || null,
+      city: city || "Beirut",
+      value_per_redemption: parsedFee,
       lat,
       lng,
       status,
@@ -354,6 +371,33 @@ function ShopFormModal({
               onChange={(e) => setPhone(e.target.value)}
               className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
             />
+          </div>
+        </div>
+
+        <div className="mb-4 grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-neutral-600">City</label>
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Beirut"
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-neutral-600">Value per redemption (USD)</label>
+            <input
+              value={valuePerRedemption}
+              onChange={(e) => setValuePerRedemption(e.target.value)}
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 3.00"
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
+            />
+            <p className="mt-1 text-xs text-neutral-400">
+              Fee charged to this shop per verified redemption. Used for Reports and future shop billing.
+            </p>
           </div>
         </div>
 
