@@ -1,3 +1,14 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# pnpm 10+ refuses to run any dependency's install/postinstall script unless
+# it's explicitly allow-listed here, and (as of pnpm 11) treats an unlisted
+# script as a hard install failure (ERR_PNPM_IGNORED_BUILDS), not a warning —
+# this broke the Vercel build on 2026-08-30. unrs-resolver is a transitive
+# devDependency of eslint-config-next (via eslint-import-resolver-typescript)
+# used only by `next lint`, not by `next build`; its postinstall just fetches
+# the correct prebuilt native binary for the platform. See
+# docs/incidents/2026-08-30-admin-panel-outage.md, root cause 4.
+allowBuilds:
+  unrs-resolver: true
