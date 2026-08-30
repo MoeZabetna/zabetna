@@ -15,7 +15,7 @@ export default async function OffersPage({
     supabase
       .from("offers")
       .select(
-        "id, shop_id, title, discount_type, discount_value, per_user_limit, total_limit, start_at, end_at, status, days_of_week, shops(name)"
+        "id, shop_id, title, discount_type, discount_value, minimum_order_value, per_user_limit, total_limit, start_at, end_at, status, days_of_week, shops(name)"
       )
       .order("created_at", { ascending: false }),
     supabase.from("shops").select("id, name").order("name", { ascending: true }),

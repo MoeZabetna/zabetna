@@ -14,6 +14,7 @@ export interface OfferRow {
   title: string;
   discount_type: "percentage" | "fixed" | "bogo";
   discount_value: number;
+  minimum_order_value: number;
   per_user_limit: number;
   total_limit: number | null;
   start_at: string;
@@ -133,7 +134,12 @@ export function OffersManager({
                   </div>
                 </td>
                 <td className="px-4 py-3 text-neutral-600">{shopName(offer)}</td>
-                <td className="px-4 py-3 text-neutral-600">{discountLabel(offer)}</td>
+                <td className="px-4 py-3 text-neutral-600">
+                  {discountLabel(offer)}
+                  {offer.minimum_order_value > 0 && (
+                    <div className="text-xs text-neutral-400">Min. order ${offer.minimum_order_value}</div>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-neutral-600">{daysLabel(offer.days_of_week)}</td>
                 <td className="px-4 py-3 text-neutral-600">
                   {formatDate(offer.start_at)} – {formatDate(offer.end_at)}
@@ -232,6 +238,7 @@ function OfferFormModal({
   const [terms, setTerms] = useState("");
   const [discountType, setDiscountType] = useState<OfferRow["discount_type"]>(offer?.discount_type ?? "percentage");
   const [discountValue, setDiscountValue] = useState(offer?.discount_value ?? 10);
+  const [minimumOrderValue, setMinimumOrderValue] = useState(offer?.minimum_order_value ?? 0);
   const [perUserLimit, setPerUserLimit] = useState(offer?.per_user_limit ?? 1);
   const [totalLimit, setTotalLimit] = useState<string>(offer?.total_limit != null ? String(offer.total_limit) : "");
   const [startAt, setStartAt] = useState(offer ? toLocalInputValue(offer.start_at) : initialWindow.start);
@@ -264,6 +271,7 @@ function OfferFormModal({
       terms,
       discountType,
       discountValue: discountType === "bogo" ? 0 : discountValue,
+      minimumOrderValue,
       perUserLimit,
       totalLimit: totalLimit.trim() === "" ? null : Number(totalLimit),
       startAt: fromLocalInputValue(startAt),
@@ -282,6 +290,7 @@ function OfferFormModal({
       title,
       discount_type: input.discountType,
       discount_value: input.discountValue,
+      minimum_order_value: minimumOrderValue,
       per_user_limit: perUserLimit,
       total_limit: input.totalLimit,
       start_at: input.startAt,
@@ -323,7 +332,7 @@ function OfferFormModal({
           </div>
         </div>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 grid grid-cols-3 gap-3">
           <div>
             <label className="mb-1 block text-xs font-medium text-neutral-600">Discount type</label>
             <select
@@ -349,6 +358,18 @@ function OfferFormModal({
               placeholder={discountType === "bogo" ? "Not applicable" : undefined}
               className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 disabled:bg-neutral-100 disabled:text-neutral-400"
             />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-neutral-600">Min. order (USD)</label>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={minimumOrderValue}
+              onChange={(e) => setMinimumOrderValue(Number(e.target.value))}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900"
+            />
+            <p className="mt-1 text-xs text-neutral-400">0 = no minimum. Shown to users; not enforced automatically.</p>
           </div>
         </div>
 

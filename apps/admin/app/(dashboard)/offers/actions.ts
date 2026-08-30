@@ -10,6 +10,7 @@ export interface OfferInput {
   terms: string;
   discountType: "percentage" | "fixed" | "bogo";
   discountValue: number;
+  minimumOrderValue: number;
   perUserLimit: number;
   totalLimit: number | null;
   startAt: string; // ISO
@@ -31,6 +32,7 @@ export async function createOffer(input: OfferInput) {
     terms: input.terms || null,
     discount_type: input.discountType,
     discount_value: input.discountValue,
+    minimum_order_value: input.minimumOrderValue,
     per_user_limit: input.perUserLimit,
     total_limit: input.totalLimit,
     start_at: input.startAt,
@@ -53,6 +55,7 @@ export async function updateOffer(id: string, input: OfferInput) {
       terms: input.terms || null,
       discount_type: input.discountType,
       discount_value: input.discountValue,
+      minimum_order_value: input.minimumOrderValue,
       per_user_limit: input.perUserLimit,
       total_limit: input.totalLimit,
       start_at: input.startAt,

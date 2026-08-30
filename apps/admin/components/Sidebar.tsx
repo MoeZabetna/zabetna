@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutGrid, Store, Tag, Image as ImageIcon, BarChart3, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Store, Tag, Image as ImageIcon, BarChart3, ShieldCheck, Users, Gift } from "lucide-react";
 
 const NAV = [
   { href: "/categories", label: "Categories", icon: LayoutGrid, permission: "content.manage" },
@@ -10,6 +10,12 @@ const NAV = [
   { href: "/offers", label: "Offers", icon: Tag, permission: "shops.manage" },
   { href: "/banners", label: "Banners", icon: ImageIcon, permission: "content.manage" },
   { href: "/reports", label: "Reports", icon: BarChart3, permission: "reports.view" },
+  { href: "/users", label: "Users", icon: Users, permission: "users.view" },
+  // Visibility is gated the same as Users (users.view) — rewards.manage is
+  // the narrower permission that only gates the Confirm/Reject actions
+  // inside the page itself (see rewards/actions.ts), not whether the tab
+  // shows up at all.
+  { href: "/rewards", label: "Reward Program", icon: Gift, permission: "users.view" },
   { href: "/admins", label: "Admins", icon: ShieldCheck, permission: "admins.manage" },
 ];
 

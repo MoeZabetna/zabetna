@@ -1,0 +1,31 @@
+-- 0017_redemptions_users_view_access.sql
+--
+-- Bug fix caught while building the Users admin tab, before shipping it.
+--
+-- public.user_points_summary (0016_rewards_program.sql) is declared
+-- `security_invoker = true`, so it runs with the *querying admin's* RLS,
+-- not the view owner's. Its per-user redemption_count / points_earned /
+-- points_available / available_usd columns are computed by joining to
+-- public.redemptions — but the existing redemptions_admin_read policy
+-- (0001_init.sql) only admits `reports.view`:
+--
+--   create policy redemptions_admin_read on redemptions
+--     for select using (has_permission('reports.view'));
+--
+-- The Support Agent role has `users.view` but NOT `reports.view`
+-- (0001_init.sql seed). Result: a Support Agent opening the Users tab
+-- would see every user's redemption/points columns silently show as 0 —
+-- not an error, just wrong numbers, because their RLS-scoped read of
+-- `redemptions` returns nothing. Only Super Admin (who holds every
+-- permission) would ever see correct figures.
+--
+-- Fix: reading redemptions to compute a user's own points summary is
+-- exactly what the Users tab (gated on users.view) is for — so
+-- users.view is added as an alternate qualifying permission on this
+-- policy, rather than shipping a report that quietly lies to anyone but
+-- Super Admin. This does mean a users.view-only admin (Support Agent)
+-- can now also query public.redemptions directly, not just through the
+-- view — an intentional, disclosed widening, not a side effect.
+drop policy if exists redemptions_admin_read on public.redemptions;
+create policy redemptions_admin_read on public.redemptions
+  for select using (has_permission('reports.view') or has_permission('users.view'));

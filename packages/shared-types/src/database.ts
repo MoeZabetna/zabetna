@@ -269,6 +269,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "favorites_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_points_summary"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       featured_listings: {
@@ -323,6 +330,7 @@ export type Database = {
           end_at: string
           id: string
           image_url: string | null
+          minimum_order_value: number
           per_user_limit: number
           shop_id: string
           start_at: string
@@ -341,6 +349,7 @@ export type Database = {
           end_at: string
           id?: string
           image_url?: string | null
+          minimum_order_value?: number
           per_user_limit?: number
           shop_id: string
           start_at?: string
@@ -359,6 +368,7 @@ export type Database = {
           end_at?: string
           id?: string
           image_url?: string | null
+          minimum_order_value?: number
           per_user_limit?: number
           shop_id?: string
           start_at?: string
@@ -382,7 +392,9 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          date_of_birth: string | null
           full_name: string | null
+          gender: Database["public"]["Enums"]["gender_option"] | null
           id: string
           locale: string
           phone: string | null
@@ -392,7 +404,9 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_option"] | null
           id: string
           locale?: string
           phone?: string | null
@@ -402,7 +416,9 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          date_of_birth?: string | null
           full_name?: string | null
+          gender?: Database["public"]["Enums"]["gender_option"] | null
           id?: string
           locale?: string
           phone?: string | null
@@ -474,11 +490,79 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "redemptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_points_summary"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "redemptions_verified_by_fkey"
             columns: ["verified_by"]
             isOneToOne: false
             referencedRelation: "shop_staff"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_redemption_requests: {
+        Row: {
+          admin_note: string | null
+          id: string
+          phone_number: string
+          points_requested: number
+          processed_at: string | null
+          processed_by: string | null
+          requested_at: string
+          status: Database["public"]["Enums"]["reward_request_status"]
+          usd_amount: number
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          id?: string
+          phone_number: string
+          points_requested: number
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["reward_request_status"]
+          usd_amount: number
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          id?: string
+          phone_number?: string
+          points_requested?: number
+          processed_at?: string | null
+          processed_by?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["reward_request_status"]
+          usd_amount?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemption_requests_processed_by_fkey"
+            columns: ["processed_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemption_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemption_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_points_summary"
+            referencedColumns: ["user_id"]
           },
         ]
       }
@@ -620,6 +704,23 @@ export type Database = {
       }
     }
     Views: {
+      user_points_summary: {
+        Row: {
+          available_usd: number | null
+          date_of_birth: string | null
+          full_name: string | null
+          gender: Database["public"]["Enums"]["gender_option"] | null
+          lifetime_paid_usd: number | null
+          phone: string | null
+          points_available: number | null
+          points_claimed: number | null
+          points_earned: number | null
+          redemption_count: number | null
+          registered_at: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       verified_redemptions: {
         Row: {
           category_id: string | null
@@ -661,8 +762,10 @@ export type Database = {
       banner_link_type: "shop" | "offer" | "category" | "external_url"
       banner_status: "draft" | "scheduled" | "active" | "expired"
       discount_type: "percentage" | "fixed" | "bogo"
+      gender_option: "male" | "female" | "prefer_not_to_say"
       offer_status: "draft" | "active" | "paused" | "expired"
       redemption_status: "pending" | "verified" | "expired" | "cancelled"
+      reward_request_status: "pending" | "confirmed" | "rejected"
       shop_status: "pending" | "active" | "suspended"
       staff_role: "owner" | "manager" | "staff"
     }
@@ -796,8 +899,10 @@ export const Constants = {
       banner_link_type: ["shop", "offer", "category", "external_url"],
       banner_status: ["draft", "scheduled", "active", "expired"],
       discount_type: ["percentage", "fixed", "bogo"],
+      gender_option: ["male", "female", "prefer_not_to_say"],
       offer_status: ["draft", "active", "paused", "expired"],
       redemption_status: ["pending", "verified", "expired", "cancelled"],
+      reward_request_status: ["pending", "confirmed", "rejected"],
       shop_status: ["pending", "active", "suspended"],
       staff_role: ["owner", "manager", "staff"],
     },

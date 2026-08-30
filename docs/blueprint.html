@@ -513,10 +513,21 @@ td.key, td strong{color:var(--ink); font-weight:600;}
       <div class="table-wrap">
         <table>
           <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
-          <tr><td class="key">offers</td><td>A discount published by a shop</td><td>id, shop_id, title, terms, discount_type, discount_value, start_at, end_at, per_user_limit, total_limit, status</td></tr>
+          <tr><td class="key">offers</td><td>A discount published by a shop</td><td>id, shop_id, title, terms, discount_type, discount_value, minimum_order_value (USD, 0 = none — display-only, see below), start_at, end_at, per_user_limit, total_limit, status</td></tr>
           <tr><td class="key">redemptions</td><td>Every redemption attempt — the source of all usage reporting</td><td>id, offer_id, shop_id, user_id, token, status (pending/verified/expired/cancelled), verified_by (shop_staff), verified_at, expires_at</td></tr>
         </table>
       </div>
+      <p style="margin-top:.75rem; font-size:0.85rem"><code>offers.minimum_order_value</code> (2026-08-30) is shown to users so they know a shop requires a minimum order to redeem — e.g. a restaurant requiring a $15 order minimum. It is <b>display-only</b>: no order/purchase total is captured anywhere in this schema or in the <code>create-redemption</code>/<code>verify-redemption</code> edge functions, so nothing enforces it automatically today. Enforcing it for real would require capturing an actual order amount at redemption time — a bigger change, not done here.</p>
+
+      <h3 style="margin-top:2rem"><span class="domain-tag">loyalty &amp; rewards</span></h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Table</th><th>Purpose</th><th>Key fields</th></tr>
+          <tr><td class="key">profiles</td><td><i>(extended, 2026-08-30)</i> — gender and date of birth, self-reported, both nullable</td><td>+ gender (male/female/prefer_not_to_say), date_of_birth</td></tr>
+          <tr><td class="key">reward_redemption_requests</td><td>A user's request to cash out their point balance to Wish Money</td><td>id, user_id, points_requested, usd_amount, phone_number, status (pending/confirmed/rejected), requested_at, processed_at, processed_by, admin_note</td></tr>
+        </table>
+      </div>
+      <p style="margin-top:.75rem; font-size:0.85rem">1 point per verified redemption, $0.25/point, 40-point ($10.00) minimum payout. <code>points_requested</code>/<code>usd_amount</code>/<code>phone_number</code> are computed and locked server-side at request time — never trusted from client input, and immutable once the admin confirms or rejects. Full design and the exact reasoning: <code>docs/rewards-program.md</code>.</p>
 
       <h3 style="margin-top:2rem"><span class="domain-tag">merchandising</span></h3>
       <div class="table-wrap">
@@ -619,10 +630,13 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <tr><td>View / resolve support &amp; disputes</td><td class="yes">Full</td><td class="partial">View</td><td class="no">—</td><td class="yes">Full</td><td class="no">—</td></tr>
           <tr><td>View reports (overall + per-shop)</td><td class="yes">Full</td><td class="yes">Full</td><td class="partial">Own content only</td><td class="partial">View</td><td class="yes">Full</td></tr>
           <tr><td>Export reports</td><td class="yes">Full</td><td class="partial">Yes</td><td class="no">—</td><td class="no">—</td><td class="yes">Full</td></tr>
+          <tr><td>View app users &amp; Reward Program (2026-08-30)</td><td class="yes">Full</td><td class="no">—</td><td class="no">—</td><td class="yes">Full</td><td class="no">—</td></tr>
+          <tr><td>Confirm / reject a points payout (2026-08-30)</td><td class="yes">Full</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
           <tr><td>Manage admin users &amp; roles</td><td class="yes">Full</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
         </table>
       </div>
       <p style="margin-top:1rem; font-size:0.85rem">Every action a role permits is also written to <code>audit_log</code> — who did what, to which record, and when — visible to Super Admin regardless of who performed it.</p>
+      <p style="margin-top:.5rem; font-size:0.85rem">Confirming a payout is deliberately narrower than viewing users — it represents authorizing that a real Wish Money transfer was already sent, not just reading account data. Granted to Super Admin only as seeded; assign it to another role via <code>role_permissions</code> once the admin user-management UI exists. See <code>docs/rewards-program.md</code>.</p>
     </section>
 
     <section id="roadmap">
@@ -644,8 +658,8 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <div>
             <h4>Admin core</h4>
             <p>Admin auth, role/permission system, category CRUD, shop onboarding &amp; approval queue, admin user management.</p>
-            <p style="margin-top:.5rem"><b>Live:</b> RBAC-gated login, category CRUD + reorder + icon picker, shop onboarding with map-picked geolocation, 19 real demo shops seeded (Beirut). <b>Remaining:</b> shop approval workflow (all demo shops are pre-set to "active"), banners, reporting, admin user invite/permission UI.</p>
-            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database. <b>Shop onboarding itself: done.</b> Approval workflow, banners, reporting, and admin management remain.</div>
+            <p style="margin-top:.5rem"><b>Live:</b> RBAC-gated login, category CRUD + reorder + icon picker, shop onboarding with map-picked geolocation, 19 real demo shops seeded (Beirut), per-shop redemption fee + Reports (2026-08-30), offer minimum-order display (2026-08-30), Users tab + Reward Program tab — points/loyalty payouts, admin-confirmed against a manual Wish Money transfer (2026-08-30, see docs/rewards-program.md). <b>Remaining:</b> shop approval workflow (all demo shops are pre-set to "active"), banners, CSV export, admin user invite/permission UI.</p>
+            <div class="done">Done when: ops can onboard a real shop end-to-end without a developer touching the database. <b>Shop onboarding itself: done.</b> Approval workflow, banners, and admin management remain.</div>
           </div>
         </div>
         <div class="phase">
@@ -709,6 +723,8 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           <tr><td class="key">Demo data</td><td>19 real, named Beirut businesses across all 8 categories (Em Sherif, Tawlet, The Music Hall, ABC Achrafieh, etc.), researched via web search rather than invented — not synthetic "Shop 1/Shop 2" rows. Coordinates are neighborhood-level approximations (no geocoding API used); each pin should be corrected via the admin map picker before real users see it.</td><td>2026-08-29</td></tr>
           <tr><td class="key">Prior "Zabetna" projects</td><td>A GitHub org (MoeZabetna) and several Vercel projects from June 2025 were found during the domain check. Confirmed with Mo as abandoned — deliberately not reused or migrated from.</td><td>2026-08-29</td></tr>
           <tr><td class="key">Business model</td><td>Commission-per-redemption: each shop has a <code>value_per_redemption</code> (USD, admin-editable). The fee is locked onto each redemption row at the moment it's verified (a DB trigger copies the shop's <em>current</em> rate at that instant), not recomputed later from the shop's rate — so a shop's amount owed for redemptions that already happened never silently changes if their rate is renegotiated afterward. See docs/vendor-app-fee-reporting.md.</td><td>2026-08-30</td></tr>
+          <tr><td class="key">Minimum order condition</td><td><code>offers.minimum_order_value</code> is a structured USD field (0 = none), not free text in the offer description — shown to users so they know a shop requires a minimum order to redeem. Display-only: no order/purchase amount is captured anywhere in the schema today, so it isn't enforced automatically.</td><td>2026-08-30</td></tr>
+          <tr><td class="key">Points / rewards rate</td><td>1 point per verified redemption, $0.25/point, 40-point ($10.00) minimum before a payout can be requested. Cash-out always sweeps the user's full available balance (no partial-amount picker). Admin manually wires the payout via Wish Money, then confirms in the admin panel — confirming records that the transfer happened, it doesn't send it. See docs/rewards-program.md.</td><td>2026-08-30</td></tr>
         </table>
       </div>
     </section>
@@ -724,7 +740,8 @@ td.key, td strong{color:var(--ink); font-weight:600;}
             <li>Banners (in-app promotional banners, scheduling, active/inactive)</li>
             <li>Featured listings — pin top 3 shops per category</li>
             <li>Reporting — <s>overall admin dashboards</s> done (2026-08-30): Reports → Overall Redemption (filterable by category/shop/city, sortable) + Daily Performance (hour × day-of-week heatmap). Still open: CSV export, and the per-shop vendor/shops-app dashboard — see docs/vendor-app-fee-reporting.md for what that needs</li>
-            <li>Admin user management — invite, assign role, deactivate (the role/permission engine underneath already exists and is enforced by RLS; only the UI for managing it is missing)</li>
+            <li><s>Users tab</s> and <s>Reward Program tab</s> done (2026-08-30) — registered users, points earned/available, and Wish Money payout requests with Confirm/Reject. See docs/rewards-program.md.</li>
+            <li>Admin user management — invite, assign role, deactivate (the role/permission engine underneath already exists and is enforced by RLS; only the UI for managing it is missing — this is also the only way today to grant <code>rewards.manage</code> to a role other than Super Admin)</li>
             <li>Shop approval queue — right now every shop is created as "active" directly; a pending → approved workflow for self-service onboarding isn't built</li>
           </ul>
         </div>
@@ -742,6 +759,7 @@ td.key, td strong{color:var(--ink); font-weight:600;}
             <li>Splash + Onboarding (4): Splash, Language, onboarding 1–3</li>
             <li>Auth (5): landing, Sign in, Sign Up, verify your number, verified</li>
             <li>Main (10): Categories, Menu, Shops, Shop Detail, Redemption Confirmation (×3 states), Settings, Profile, Help/Support</li>
+            <li><b>My Points / Redeem</b> (new, 2026-08-30) — not yet designed in Figma. Needs: balance display (query <code>user_points_summary</code>, already RLS-scoped to the signed-in user), a "Redeem" action that sweeps the full available balance with no amount entry, the "24–72 hours, weekdays only" processing message, and a prompt to add a phone number first if the profile doesn't have one — the server rejects the request either way, but the UI should explain why before the user hits that error. See docs/rewards-program.md for exactly what the backend already enforces.</li>
           </ul>
         </div>
         <div class="card">
@@ -753,8 +771,12 @@ td.key, td strong{color:var(--ink); font-weight:600;}
           </ul>
         </div>
       </div>
+
+      <div class="callout" style="margin-top:1.5rem">
+        <p><strong>Push notifications don't exist yet, anywhere in this codebase</strong> (confirmed 2026-08-30 — no push infra, no notifications table). This blocks a specific, already-requested feature: telling a user their points payout was confirmed. Until push (or some in-app equivalent) is built, a user has no way to know a request was processed except noticing the Wish Money transfer itself. Needed before the Reward Program is a complete loop end-to-end — see docs/rewards-program.md.</p>
+      </div>
     </section>
 
-    <div class="footline">Zabetna — Blueprint v0.2 — this document is the plan, not the product. Next: finish Admin Panel (banners, reporting, admin management, approval queue), then User App MVP screens.</div>
+    <div class="footline">Zabetna — Blueprint v0.2 — this document is the plan, not the product. Next: finish Admin Panel (banners, admin management, approval queue), then User App MVP screens.</div>
   </main>
 </div>
