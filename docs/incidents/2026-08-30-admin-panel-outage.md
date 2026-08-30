@@ -1,23 +1,26 @@
 # Incident: Admin Panel down for ~12 hours (2026-08-30)
 
-**Status:** In progress, close to resolved. Root causes 1–3 (below) were
-fixed and verified earlier. Once the repo actually had real commits on
-GitHub (root cause 3), a **fourth**, separate chain of failures showed up
-in the first real GitHub-triggered Vercel build, all specific to running
-`pnpm` for this monorepo on Vercel's build image — see root cause 4. The
-fix for that is committed here; the deploy that proves it end-to-end
-(build + production traffic) was still being verified as of this write-up.
-Update this line once that's confirmed.
+**Status:** Resolved and verified end-to-end. All five root causes below
+are fixed. The first real GitHub-triggered build succeeded
+(`dpl_6fL9iUUMggMjdTMv9oKcTDkwAiX4`, commit `79db288`), and — once root
+cause 5 (missing runtime env vars) was found and fixed — a redeploy of
+that same commit (`dpl_7BLmQZMPLpKMa5kEqoAUUcr8f2Rz`) is `READY`, aliased
+to `zabetna-admin-v2.vercel.app`, and confirmed serving `/`, `/login`,
+`/shops` with HTTP 200 and zero runtime errors in the last 10 minutes of
+logs.
 
-**Important nuance:** production (`zabetna-admin-v2.vercel.app`) has been
+**Important nuance:** production (`zabetna-admin-v2.vercel.app`) kept
 serving correctly (verified `/login`, HTTP 200) throughout root cause 4 —
 Vercel does not swap the live alias onto a deployment that fails to build,
-it keeps serving the last successful one. That last successful one
-(`dpl_8QYuNefrHVVTsgtX3ytGBk8gHVUJ`) was a **direct CLI upload**, not a
-GitHub-triggered build — meaning production has not yet been proven to
-build correctly from what's actually on GitHub. Don't read "site is up"
-as "the GitHub pipeline works" — those are two different facts, and this
-whole root cause exists because the second one wasn't true yet.
+it keeps serving the last successful one. That masked two things at once:
+first, that production hadn't yet been proven to build from what was
+actually on GitHub (the last successful deploy, `dpl_8QYuNefrHVVTsgtX3ytGBk8gHVUJ`,
+was a direct CLI upload); second, once the GitHub build *did* succeed, it
+immediately 500'd on every route at runtime — a bug that had been latent
+the entire incident because every previous deploy attempt failed before
+ever reaching runtime. "Site is up" was never the same fact as "the
+GitHub pipeline works," and "the build succeeded" was never the same fact
+as "the app runs." This incident hit all three gaps in sequence.
 
 This doc exists so nobody — human or Claude — has to re-derive any of
 this from scratch next time something in this pipeline breaks.
@@ -174,6 +177,88 @@ see what it changes, and confirming a clean `pnpm install` (exit 0)
 followed by a full `pnpm --filter @zabetna/admin run build` (exit 0)
 locally before pushing.
 
+Two more wrinkles inside 4c–4d, found while getting the first real
+GitHub-triggered build green:
+
+- **Vercel's `/vercel/pathN` layout is not stable across builds.** The
+  `cd ../path0` fix above (from one diagnostic build) failed on the very
+  next build with `No such file or directory` — a *different* build had
+  the Root Directory context **nested inside** the full-checkout
+  directory (`/vercel/path0/apps/admin`) instead of a **sibling**
+  (`/vercel/path1` next to `/vercel/path0`). Both layouts occur; which one
+  you get is not predictable. The robust fix, used in the final Install
+  and Build Command overrides, searches from the common ancestor instead
+  of assuming a relative path:
+  ```
+  cd $(dirname $(find /vercel -maxdepth 2 -name pnpm-workspace.yaml)) && corepack pnpm@latest install --frozen-lockfile=false --config.pm-on-fail=ignore
+  cd $(dirname $(find /vercel -maxdepth 2 -name pnpm-workspace.yaml)) && corepack pnpm@latest --config.pm-on-fail=ignore --filter @zabetna/admin run build
+  ```
+- **`corepack pnpm@latest` vs this repo's `packageManager` pin.**
+  `apps/admin/package.json` pins `"packageManager": "pnpm@10.28.0"`. When
+  `corepack pnpm@latest` (currently resolving to v11.24.0 — the only
+  version proven to correctly resolve this workspace on Vercel) detects
+  that pin, pnpm itself hard-errors: *"Your current pnpm is v11.24.0...
+  pnpm does not switch versions when running under corepack."* Fix:
+  `--config.pm-on-fail=ignore`, the exact bypass pnpm's own error message
+  suggests — included in the commands above.
+
+## Root cause 5: missing Supabase environment variables on Vercel (runtime 500, not a build failure)
+
+Once root cause 4 was fully fixed, the first GitHub-triggered build
+succeeded completely (`dpl_6fL9iUUMggMjdTMv9oKcTDkwAiX4`, `READY`,
+aliased to production) — the first time in this entire incident a
+GitHub-triggered build had gone green. But the live site then 500'd on
+every route (`/`, `/login`). `get_runtime_logs` showed:
+
+```
+Error: Your project's URL and Key are required to create a Supabase client!
+```
+
+thrown from `apps/admin/lib/supabase/server.ts`, which reads
+`process.env.NEXT_PUBLIC_SUPABASE_URL!` and
+`process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!` with non-null assertions —
+so a missing env var throws exactly this at request time, not at build
+time.
+
+**This bug had been latent the entire incident.** Every deployment before
+`dpl_6fL9iUUMggMjdTMv9oKcTDkwAiX4` failed at *build* time (root causes
+1–4), so none of them ever reached the code path that reads these env
+vars. The first build to succeed immediately exposed it.
+
+**Root cause:** `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_ANON_KEY` were never set as Vercel Environment
+Variables for this project — Environment Variables was completely empty.
+They exist locally in `apps/admin/.env.local`, but that file is (and
+always has been) `.gitignore`d and was never committed (`git ls-files`
+and `git log --all -- apps/admin/.env*` both return nothing). **This
+directly contradicts a claim in `README.md`** that said `.env` files with
+the live project's URL and anon key were "already committed for all
+three apps" — that was never true for `apps/admin`; the README has been
+corrected.
+
+**Fix:** added both variables in Vercel Dashboard → Project Settings →
+Environment Variables, scoped to all three environments (Production,
+Preview, Development), then triggered a Redeploy (Vercel requires a new
+deployment to pick up env var changes — existing deployments don't get
+them retroactively). Values are the anon/publishable key and project URL
+from `apps/admin/.env.local`; per the Supabase docs and this repo's own
+README, the anon key is meant to be public in a client bundle, so it was
+entered as a Vercel **Config** variable, not **Secret** (Vercel's own UI
+flags `NEXT_PUBLIC_`-prefixed values entered as Secret with a warning,
+since Secret values can't be read back but `NEXT_PUBLIC_` values are
+inlined into the client bundle at build time regardless — Config is the
+correct type for them). Verified via `web_fetch_vercel_url` (`/`,
+`/login`, `/shops` all HTTP 200) and `get_runtime_logs` (zero errors in
+the 10 minutes after redeploy).
+
+**Follow-up worth doing:** decide whether `apps/admin/.env.local` (or at
+least its two `NEXT_PUBLIC_*` values, which are meant to be public) should
+actually be committed to the repo per the README's original intent — right
+now the README's claim is fixed to match reality (not committed), but the
+underlying inconsistency between "these are meant to be public" and
+"they're gitignored and only live in Vercel's dashboard" is a legitimate
+process question, not just a documentation bug.
+
 ## Tooling limitation worth knowing about
 
 The Claude Cowork cloud sandbox that diagnosed this had no working way to
@@ -189,22 +274,36 @@ off the same way this one was handled.
 
 ## Why this took 12 hours instead of minutes
 
-Two things compounded: (a) each of the three causes above produces the
-**same symptom** (site down / 404), so fixing one and still seeing a
-broken site looked like "the fix didn't work" rather than "there's a
-second, different bug underneath" — they had to be found and fixed in
-sequence, not diagnosed all at once; (b) there was no pre-production check
-— every deploy went straight to `zabetna-admin-v2.vercel.app` (production)
-with nothing to catch a broken build before real traffic hit it. Of the
-last 16 deployments to this project, 8 failed outright.
+Three things compounded: (a) most of the causes above produce the **same
+symptom** (site down / crashing), so fixing one and still seeing a broken
+site looked like "the fix didn't work" rather than "there's a second,
+different bug underneath" — they had to be found and fixed in sequence,
+not diagnosed all at once; (b) there was no pre-production check — every
+deploy went straight to `zabetna-admin-v2.vercel.app` (production) with
+nothing to catch a broken build before real traffic hit it (of the ~20
+deployments to this project during the incident, more than half failed
+outright); (c) root causes 1–4 were all *build-time* failures and root
+cause 5 was a *runtime* failure — since a broken build never reaches
+runtime, the missing-env-vars bug was completely invisible until the
+build was finally fixed, so it couldn't have been found any earlier than
+it was, no matter how thorough the build-time debugging was.
 
-## Recommended follow-ups (not yet done as of this doc)
+## Recommended follow-ups (status as of this doc)
 
-- Confirm Root Directory (`apps/admin`) once GitHub actually has content
-  and a deploy runs from it.
+- ~~Confirm Root Directory (`apps/admin`) once GitHub actually has content
+  and a deploy runs from it.~~ **Done** — confirmed correct via the
+  successful GitHub-triggered build.
 - Use Vercel's normal preview-deployment flow (non-production branches /
   PRs get a preview URL automatically once Git is properly connected) so a
-  broken build is caught before it reaches production, instead of after.
+  broken build — or a runtime bug like root cause 5 — is caught before it
+  reaches production, instead of after. **Not yet done.** This is the
+  single highest-leverage follow-up: it would have caught root cause 5
+  before it ever hit real users.
+- Decide whether the two public Supabase env vars should be committed to
+  the repo (matching the README's original intent) instead of living only
+  in Vercel's dashboard, so a future new environment (a second Vercel
+  project, a local clone, Render) doesn't silently hit the same missing-
+  env-var 500. **Not yet done** — see root cause 5's follow-up note above.
 - Consider whether staying current on Next.js 16.x (2 months old at time
   of writing, still shaking out breaking-change edges like the one in
   cause #1) is worth it for an internal admin tool vs. pinning to a more

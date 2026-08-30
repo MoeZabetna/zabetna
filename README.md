@@ -52,10 +52,18 @@ existing domain here, or buy a new one — before launch.
 See §01, §06, §07, §08 of the blueprint for the full detail and the product
 questions still open.
 
-`.env` files with the live project's URL and publishable (anon) key are
-already committed for all three apps — that key is meant to be public in a
-client bundle, so this isn't a secret leak, but rotate it before this repo
-ever goes to a public host.
+`.env` files are **not** committed (they're gitignored in every app,
+`apps/admin` included) — this line previously claimed they were already
+committed for all three apps, which was never true and caused a real
+outage: the Admin Panel's Supabase URL and anon key only ever existed in
+`apps/admin/.env.local` on developer machines, so the first Vercel
+deployment that actually built successfully still 500'd at runtime until
+the same two values were added as Vercel Environment Variables by hand.
+See `docs/incidents/2026-08-30-admin-panel-outage.md`, root cause 5. To
+run any app locally, copy `.env.example` (if present) or ask for the
+current Supabase URL and publishable (anon) key — that key is meant to be
+public in a client bundle, so sharing it isn't a secret leak, but it
+should still be rotated before this repo ever goes to a public host.
 
 ## Setup
 
