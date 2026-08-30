@@ -9,7 +9,9 @@ export default async function ShopsPage() {
   const [{ data: shops }, { data: categories }, { data: offerCounts }] = await Promise.all([
     supabase
       .from("shops")
-      .select("id, name, category_id, description, address, phone, lat, lng, status, categories(name)")
+      .select(
+        "id, name, category_id, description, address, phone, lat, lng, status, banner_image_url, menu_images, categories(name)"
+      )
       .order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name").order("sort_order", { ascending: true }),
     supabase.from("offers").select("shop_id, status, start_at, end_at"),

@@ -12,6 +12,8 @@ export interface ShopInput {
   lat: number | null;
   lng: number | null;
   status: "pending" | "active" | "suspended";
+  bannerImageUrl: string | null;
+  menuImages: string[];
 }
 
 // Gated by RLS policy `shops_admin_write` (shops.manage) — see
@@ -29,6 +31,8 @@ export async function createShop(input: ShopInput) {
     lat: input.lat,
     lng: input.lng,
     status: input.status,
+    banner_image_url: input.bannerImageUrl,
+    menu_images: input.menuImages,
   });
   revalidatePath("/shops");
   return { error: error?.message ?? null };
@@ -47,6 +51,8 @@ export async function updateShop(id: string, input: ShopInput) {
       lat: input.lat,
       lng: input.lng,
       status: input.status,
+      banner_image_url: input.bannerImageUrl,
+      menu_images: input.menuImages,
     })
     .eq("id", id);
   revalidatePath("/shops");

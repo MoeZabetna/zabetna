@@ -1,5 +1,5 @@
 // AUTO-GENERATED — do not hand-edit. Regenerate with 'pnpm types:generate'
-// (wraps `supabase gen types typescript`). Last generated 2026-08-29.
+// (wraps `supabase gen types typescript`). Last generated 2026-08-30.
 export type Json =
   | string
   | number
@@ -149,6 +149,7 @@ export type Database = {
       }
       banners: {
         Row: {
+          category_id: string | null
           created_at: string
           end_at: string | null
           id: string
@@ -161,6 +162,7 @@ export type Database = {
           status: Database["public"]["Enums"]["banner_status"]
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           end_at?: string | null
           id?: string
@@ -173,6 +175,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["banner_status"]
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           end_at?: string | null
           id?: string
@@ -184,7 +187,15 @@ export type Database = {
           start_at?: string
           status?: Database["public"]["Enums"]["banner_status"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "banners_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
@@ -536,6 +547,7 @@ export type Database = {
       shops: {
         Row: {
           address: string | null
+          banner_image_url: string | null
           category_id: string
           cover_images: string[]
           created_at: string
@@ -545,6 +557,7 @@ export type Database = {
           lat: number | null
           lng: number | null
           logo_url: string | null
+          menu_images: string[]
           name: string
           phone: string | null
           status: Database["public"]["Enums"]["shop_status"]
@@ -552,6 +565,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          banner_image_url?: string | null
           category_id: string
           cover_images?: string[]
           created_at?: string
@@ -561,6 +575,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           logo_url?: string | null
+          menu_images?: string[]
           name: string
           phone?: string | null
           status?: Database["public"]["Enums"]["shop_status"]
@@ -568,6 +583,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          banner_image_url?: string | null
           category_id?: string
           cover_images?: string[]
           created_at?: string
@@ -577,6 +593,7 @@ export type Database = {
           lat?: number | null
           lng?: number | null
           logo_url?: string | null
+          menu_images?: string[]
           name?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["shop_status"]

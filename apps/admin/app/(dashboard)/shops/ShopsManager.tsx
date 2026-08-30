@@ -3,8 +3,10 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2, ImageOff, FileText } from "lucide-react";
 import { createShop, updateShop, deleteShop, type ShopInput } from "./actions";
+import { BannerImagePicker } from "@/components/BannerImagePicker";
+import { MenuUploader } from "@/components/MenuUploader";
 
 // Leaflet touches `window` at import time — must be client-only, and
 // next/dynamic's ssr:false only works when called from a "use client" file,
@@ -28,6 +30,8 @@ export interface ShopRow {
   lat: number | null;
   lng: number | null;
   status: "pending" | "active" | "suspended";
+  banner_image_url: string | null;
+  menu_images: string[];
   categories: CategoryRef | CategoryRef[] | null;
 }
 
@@ -96,8 +100,30 @@ export function ShopsManager({
               return (
               <tr key={shop.id} className="border-t border-neutral-100">
                 <td className="px-4 py-3">
-                  <div className="font-medium text-neutral-900">{shop.name}</div>
-                  <div className="text-xs text-neutral-500">{shop.address ?? "No address set"}</div>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-9 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-md bg-neutral-100 text-neutral-300"
+                      title={shop.banner_image_url ? undefined : "No banner set"}
+                    >
+                      {shop.banner_image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URL, not a local/optimizable asset
+                        <img src={shop.banner_image_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <ImageOff size={14} />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 font-medium text-neutral-900">
+                        {shop.name}
+                        {shop.menu_images.length > 0 && (
+                          <span title={`${shop.menu_images.length} menu page(s)`}>
+                            <FileText size={12} className="text-neutral-400" />
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-neutral-500">{shop.address ?? "No address set"}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-neutral-600">{categoryName(shop)}</td>
                 <td className="px-4 py-3 text-neutral-600">
@@ -210,6 +236,8 @@ function ShopFormModal({
   const [status, setStatus] = useState<ShopRow["status"]>(shop?.status ?? "pending");
   const [lat, setLat] = useState(shop?.lat ?? BEIRUT_CENTER[0]);
   const [lng, setLng] = useState(shop?.lng ?? BEIRUT_CENTER[1]);
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(shop?.banner_image_url ?? null);
+  const [menuImages, setMenuImages] = useState<string[]>(shop?.menu_images ?? []);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -218,10 +246,25 @@ function ShopFormModal({
       setError("Name and category are required.");
       return;
     }
+    if (!bannerImageUrl) {
+      setError("A banner image is required — it's used as the header image on the shop's page.");
+      return;
+    }
     setSaving(true);
     setError(null);
 
-    const input: ShopInput = { name, categoryId, description, address, phone, lat, lng, status };
+    const input: ShopInput = {
+      name,
+      categoryId,
+      description,
+      address,
+      phone,
+      lat,
+      lng,
+      status,
+      bannerImageUrl,
+      menuImages,
+    };
     const res = shop ? await updateShop(shop.id, input) : await createShop(input);
     setSaving(false);
     if (res.error) return setError(res.error);
@@ -237,6 +280,8 @@ function ShopFormModal({
       lat,
       lng,
       status,
+      banner_image_url: bannerImageUrl,
+      menu_images: menuImages,
       categories: { name: categoryName },
     });
   }
@@ -245,6 +290,20 @@ function ShopFormModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-5 shadow-xl">
         <h2 className="mb-4 text-sm font-semibold text-neutral-900">{shop ? "Edit shop" : "Onboard shop"}</h2>
+
+        <label className="mb-1 block text-xs font-medium text-neutral-600">
+          Banner image <span className="text-red-500">*</span>
+        </label>
+        <p className="mb-2 text-xs text-neutral-400">Shown as the header image at the top of this shop&apos;s page.</p>
+        <div className="mb-4">
+          <BannerImagePicker bucket="shop-banners" value={bannerImageUrl} onChange={setBannerImageUrl} />
+        </div>
+
+        <label className="mb-1 block text-xs font-medium text-neutral-600">Menu</label>
+        <p className="mb-2 text-xs text-neutral-400">Photos of each menu page, or a single PDF. Optional.</p>
+        <div className="mb-4">
+          <MenuUploader value={menuImages} onChange={setMenuImages} />
+        </div>
 
         <div className="mb-4 grid grid-cols-2 gap-3">
           <div>
