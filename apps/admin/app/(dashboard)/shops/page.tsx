@@ -24,6 +24,12 @@ export default async function ShopsPage() {
   // automatically) so admins can see at a glance which shops have offers
   // that stopped working. Drafts are excluded from both counts — they're
   // not published yet, not a problem to flag.
+  //
+  // This is an async Server Component, not a client component the React
+  // Compiler optimizes; capturing "now" once per request render is the
+  // whole point here (offer windows are evaluated against request time),
+  // not a purity bug — hence the disable below.
+  // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
   const offerStatsByShop = (offerCounts ?? []).reduce<Record<string, { active: number; inactive: number }>>(
     (acc, o) => {

@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Trash2, Plus, Tag } from "lucide-react";
+import { Pencil, Trash2, Plus, Tag, Search } from "lucide-react";
 import { createOffer, updateOffer, deleteOffer, type OfferInput } from "./actions";
+import { Pagination } from "@/components/Pagination";
+
+const PAGE_SIZE = 20;
 
 interface ShopRef {
   name: string | null;
@@ -87,8 +90,31 @@ export function OffersManager({
   const [offers, setOffers] = useState(initialOffers);
   const [editing, setEditing] = useState<OfferRow | "new" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [shopSearch, setShopSearch] = useState("");
+  const [page, setPage] = useState(1);
 
-  const visibleOffers = shopFilter ? offers.filter((o) => o.shop_id === shopFilter) : offers;
+  const shopScoped = shopFilter ? offers.filter((o) => o.shop_id === shopFilter) : offers;
+  const query = shopSearch.trim().toLowerCase();
+  const visibleOffers = query ? shopScoped.filter((o) => shopName(o).toLowerCase().includes(query)) : shopScoped;
+
+  const pageCount = Math.max(1, Math.ceil(visibleOffers.length / PAGE_SIZE));
+
+  // Any change to what's being filtered can shrink the result set out from
+  // under whatever page the admin was on — jump back to page 1 rather than
+  // leave them looking at a page that no longer has matching rows. This is
+  // React's documented pattern for "adjust state when a prop/derived value
+  // changes" (react.dev/learn/you-might-not-need-an-effect) — setState
+  // during render, not inside an effect, so it doesn't cause an extra
+  // render pass.
+  const [prevFilterKey, setPrevFilterKey] = useState(`${shopSearch} ${shopFilter}`);
+  const filterKey = `${shopSearch} ${shopFilter}`;
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setPage(1);
+  }
+
+  const currentPage = Math.min(page, pageCount);
+  const pagedOffers = visibleOffers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   async function remove(id: string) {
     if (!confirm("Delete this offer? This also removes its redemption history.")) return;
@@ -102,6 +128,26 @@ export function OffersManager({
       {error && (
         <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
       )}
+
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="relative w-full max-w-xs">
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input
+            value={shopSearch}
+            onChange={(e) => setShopSearch(e.target.value)}
+            placeholder="Search by shop name…"
+            className="w-full rounded-md border border-neutral-300 py-2 pl-8 pr-3 text-sm outline-none focus:border-neutral-900"
+          />
+        </div>
+        {canManage && (
+          <button
+            onClick={() => setEditing("new")}
+            className="flex shrink-0 items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+          >
+            <Plus size={16} /> Add offer
+          </button>
+        )}
+      </div>
 
       <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">
@@ -121,11 +167,15 @@ export function OffersManager({
             {visibleOffers.length === 0 && (
               <tr>
                 <td colSpan={8} className="px-4 py-6 text-center text-neutral-500">
-                  {shopFilter ? "No offers for this shop yet." : "No offers yet — add the first one below."}
+                  {query
+                    ? `No offers match "${shopSearch.trim()}".`
+                    : shopFilter
+                      ? "No offers for this shop yet."
+                      : "No offers yet — add the first one above."}
                 </td>
               </tr>
             )}
-            {visibleOffers.map((offer) => (
+            {pagedOffers.map((offer) => (
               <tr key={offer.id} className="border-t border-neutral-100">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2 font-medium text-neutral-900">
@@ -170,14 +220,13 @@ export function OffersManager({
         </table>
       </div>
 
-      {canManage && (
-        <button
-          onClick={() => setEditing("new")}
-          className="mt-4 flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-        >
-          <Plus size={16} /> Add offer
-        </button>
+      {visibleOffers.length > 0 && (
+        <div className="mt-2 text-center text-xs text-neutral-400">
+          {visibleOffers.length} offer{visibleOffers.length === 1 ? "" : "s"}
+          {query || shopFilter ? " matching" : " total"}
+        </div>
       )}
+      <Pagination page={currentPage} pageCount={pageCount} onPageChange={setPage} />
 
       {editing && (
         <OfferFormModal

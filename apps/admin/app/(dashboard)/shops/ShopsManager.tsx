@@ -3,7 +3,7 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2, ImageOff, FileText } from "lucide-react";
+import { Pencil, Trash2, Plus, MapPin, Tag, AlertTriangle, CheckCircle2, ImageOff, FileText, Search } from "lucide-react";
 import { createShop, updateShop, deleteShop, type ShopInput } from "./actions";
 import { BannerImagePicker } from "@/components/BannerImagePicker";
 import { MenuUploader } from "@/components/MenuUploader";
@@ -62,6 +62,10 @@ export function ShopsManager({
   const [shops, setShops] = useState(initialShops);
   const [editing, setEditing] = useState<ShopRow | "new" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  const query = search.trim().toLowerCase();
+  const visibleShops = query ? shops.filter((s) => s.name.toLowerCase().includes(query)) : shops;
 
   async function remove(id: string) {
     if (!confirm("Delete this shop? This also removes its offers and redemption history.")) return;
@@ -75,6 +79,26 @@ export function ShopsManager({
       {error && (
         <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
       )}
+
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="relative w-full max-w-xs">
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by shop name…"
+            className="w-full rounded-md border border-neutral-300 py-2 pl-8 pr-3 text-sm outline-none focus:border-neutral-900"
+          />
+        </div>
+        {canManage && (
+          <button
+            onClick={() => setEditing("new")}
+            className="flex shrink-0 items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
+          >
+            <Plus size={16} /> Onboard shop
+          </button>
+        )}
+      </div>
 
       <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
         <table className="w-full text-left text-sm">
@@ -90,14 +114,14 @@ export function ShopsManager({
             </tr>
           </thead>
           <tbody>
-            {shops.length === 0 && (
+            {visibleShops.length === 0 && (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-neutral-500">
-                  No shops yet — onboard the first one below.
+                  {query ? `No shops match "${search.trim()}".` : "No shops yet — onboard the first one above."}
                 </td>
               </tr>
             )}
-            {shops.map((shop) => {
+            {visibleShops.map((shop) => {
               const stats = offerStatsByShop[shop.id] ?? { active: 0, inactive: 0 };
               return (
               <tr key={shop.id} className="border-t border-neutral-100">
@@ -194,13 +218,10 @@ export function ShopsManager({
         </table>
       </div>
 
-      {canManage && (
-        <button
-          onClick={() => setEditing("new")}
-          className="mt-4 flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100"
-        >
-          <Plus size={16} /> Onboard shop
-        </button>
+      {query && visibleShops.length > 0 && (
+        <div className="mt-2 text-center text-xs text-neutral-400">
+          {visibleShops.length} shop{visibleShops.length === 1 ? "" : "s"} matching
+        </div>
       )}
 
       {editing && (
