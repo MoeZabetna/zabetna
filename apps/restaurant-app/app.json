@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "restaurant-app",
-    "slug": "restaurant-app",
+    "name": "Zabetna Shop",
+    "slug": "zabetna-restaurant-app",
+    "scheme": "zabetnashop",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zabetna.shopapp"
     },
     "android": {
+      "package": "com.zabetna.shopapp",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",

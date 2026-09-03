@@ -122,6 +122,20 @@ The bootstrap Super Admin can sign in at `/login` with
 login (there's no self-serve reset flow yet; use the Supabase dashboard in
 the meantime).
 
+## Mobile builds (TestFlight)
+
+Both Expo apps have bundle identifiers (`com.zabetna.userapp`,
+`com.zabetna.shopapp`) and an `eas.json` with the Supabase env vars baked
+into every build profile — EAS builds run on Expo's servers and never see
+the gitignored `.env`, and both apps throw at startup without those two
+variables. Getting to TestFlight needs an Apple Developer account and an
+Expo login; the exact steps are in
+[`docs/testflight-setup.md`](docs/testflight-setup.md). For a quick
+same-day test, both apps run in Expo Go via `pnpm user-app` /
+`pnpm restaurant-app` — no Apple account, no build queue.
+
+Both apps still ship the **default Expo icon**.
+
 ## Deployment (Admin Panel)
 
 Hosted on Vercel, project `zabetna-admin-v2`, connected to this GitHub repo
