@@ -7,6 +7,9 @@
     "user-app": "pnpm --filter @zabetna/user-app start",
     "restaurant-app": "pnpm --filter @zabetna/restaurant-app start",
     "admin": "pnpm --filter @zabetna/admin dev",
+    "icloud:check": "./scripts/icloud-guard.sh check",
+    "icloud:repair": "./scripts/icloud-guard.sh repair",
+    "icloud:exclude": "./scripts/icloud-guard.sh exclude",
     "types:generate": "supabase gen types typescript --project-id albnccpmvwocmizxgfoh --schema public > packages/shared-types/src/database.ts",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset"

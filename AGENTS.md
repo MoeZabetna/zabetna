@@ -14,3 +14,14 @@
 - `docs/incidents/` is where postmortems like that one live going forward
   — add to it rather than only fixing-and-forgetting, the same way this
   one was written up.
+- Migrations: every change applied to the live database MUST also exist as
+  a numbered file in `supabase/migrations/`. On 2026-09-02 a migration
+  (`shop_staff_identity`) was found applied in production with no file
+  committed — `pnpm db:reset` would have rebuilt a database missing columns
+  the Restaurant App depends on. If you apply SQL via the Supabase MCP
+  tools, write the matching file in the same change.
+- This repo sits under `~/Desktop`, which iCloud syncs. If a build fails
+  with `ETIMEDOUT: connection timed out, read` on a path inside
+  `node_modules`, that is iCloud having evicted the file's contents, not a
+  code or network problem: run `pnpm icloud:repair`. Run `pnpm
+  icloud:exclude` after reinstalling dependencies.
