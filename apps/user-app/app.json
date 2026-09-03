@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "user-app",
-    "slug": "user-app",
+    "name": "Zabetna",
+    "slug": "zabetna-user-app",
+    "scheme": "zabetna",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zabetna.userapp"
     },
     "android": {
+      "package": "com.zabetna.userapp",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +23,14 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#913FE6"
+        }
+      ]
+    ]
   }
 }

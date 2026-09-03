@@ -13,7 +13,11 @@ export interface RewardRequestRow {
   id: string;
   user_id: string;
   points_requested: number;
+  /** Gross value of the points, before the service fee. */
   usd_amount: number;
+  service_fee_usd: number;
+  /** What must actually be transferred via Wish Money. */
+  net_usd_amount: number;
   phone_number: string;
   status: "pending" | "confirmed" | "rejected";
   requested_at: string;
@@ -45,7 +49,21 @@ export function RewardsManager({
   const [error, setError] = useState<string | null>(null);
 
   async function confirm(id: string) {
-    if (!window.confirm("Confirm this payout? Only do this after the Wish Money transfer has actually been sent."))
+    const row = rows.find((r) => r.id === id);
+    // Name the exact figure and destination in the prompt. This is the last
+    // step before a real transfer is recorded as sent, and the amount to
+    // send is the NET one — quoting it here makes an over-payment of the
+    // gross much harder to make by accident.
+    const detail = row
+      ? `\n\nSend ${formatUsd(row.net_usd_amount)} to ${row.phone_number}.\n(${row.points_requested} points = ${formatUsd(
+          row.usd_amount
+        )}, less the ${formatUsd(row.service_fee_usd)} service fee.)`
+      : "";
+    if (
+      !window.confirm(
+        `Confirm this payout? Only do this after the Wish Money transfer has actually been sent.${detail}`
+      )
+    )
       return;
     setBusyId(id);
     setError(null);
@@ -91,7 +109,9 @@ export function RewardsManager({
               <th className="px-4 py-2 font-medium">User</th>
               <th className="px-4 py-2 font-medium">Requested</th>
               <th className="px-4 py-2 font-medium text-right">Points</th>
-              <th className="px-4 py-2 font-medium text-right">Amount</th>
+              <th className="px-4 py-2 font-medium text-right">Points value</th>
+              <th className="px-4 py-2 font-medium text-right">Fee</th>
+              <th className="px-4 py-2 font-medium text-right">Send this amount</th>
               <th className="px-4 py-2 font-medium">Wish Money number</th>
               <th className="px-4 py-2 font-medium">Status</th>
               <th className="px-4 py-2" />
@@ -100,7 +120,7 @@ export function RewardsManager({
           <tbody>
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-neutral-500">
+                <td colSpan={9} className="px-4 py-6 text-center text-neutral-500">
                   No requests here.
                 </td>
               </tr>
@@ -110,8 +130,12 @@ export function RewardsManager({
                 <td className="px-4 py-3 font-medium text-neutral-900">{userName(r)}</td>
                 <td className="px-4 py-3 text-neutral-600">{formatDateTime(r.requested_at)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-neutral-900">{r.points_requested}</td>
-                <td className="px-4 py-3 text-right tabular-nums font-medium text-neutral-900">
-                  {formatUsd(r.usd_amount)}
+                <td className="px-4 py-3 text-right tabular-nums text-neutral-500">{formatUsd(r.usd_amount)}</td>
+                <td className="px-4 py-3 text-right tabular-nums text-neutral-500">
+                  -{formatUsd(r.service_fee_usd)}
+                </td>
+                <td className="px-4 py-3 text-right tabular-nums font-semibold text-neutral-900">
+                  {formatUsd(r.net_usd_amount)}
                 </td>
                 <td className="px-4 py-3 tabular-nums text-neutral-600">{r.phone_number}</td>
                 <td className="px-4 py-3">

@@ -2,13 +2,53 @@ import { createClient, FunctionsHttpError, type SupabaseClient } from "@supabase
 import type { RedemptionToken } from "@zabetna/shared-types";
 
 /**
+ * Minimal shape of the storage supabase-js persists sessions into. Declared
+ * here rather than imported so this package keeps no React Native
+ * dependency — the Expo apps pass AsyncStorage in, the admin panel passes
+ * nothing and gets the browser default.
+ */
+export type SessionStorage = {
+  getItem: (key: string) => Promise<string | null> | string | null;
+  setItem: (key: string, value: string) => Promise<void> | void;
+  removeItem: (key: string) => Promise<void> | void;
+};
+
+export type ZabetnaClientOptions = {
+  /**
+   * Where to persist the auth session. **React Native has no
+   * `localStorage`**, so without this the Expo apps keep a session only in
+   * memory and sign the user out on every app restart — pass AsyncStorage.
+   * Web (the admin panel) should leave it undefined and let supabase-js use
+   * `localStorage`.
+   */
+  storage?: SessionStorage;
+  /**
+   * Only meaningful on web, where supabase-js parses the OAuth/magic-link
+   * fragment out of `window.location`. React Native has no URL bar, and
+   * leaving it on makes supabase-js touch `window` — pass `false` there.
+   */
+  detectSessionInUrl?: boolean;
+};
+
+/**
  * One Supabase client factory shared by all three apps. Each app passes its
  * own env vars in (Expo apps use EXPO_PUBLIC_*, the admin panel uses
  * NEXT_PUBLIC_*) — this package stays framework-agnostic.
  */
-export function createZabetnaClient(url: string, anonKey: string): SupabaseClient {
+export function createZabetnaClient(
+  url: string,
+  anonKey: string,
+  options: ZabetnaClientOptions = {}
+): SupabaseClient {
   return createClient(url, anonKey, {
-    auth: { persistSession: true, autoRefreshToken: true },
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      ...(options.storage ? { storage: options.storage } : {}),
+      ...(options.detectSessionInUrl === undefined
+        ? {}
+        : { detectSessionInUrl: options.detectSessionInUrl }),
+    },
   });
 }
 

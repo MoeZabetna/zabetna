@@ -1,15 +1,67 @@
+import { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useFonts, Poppins_400Regular, Poppins_500Medium } from "@expo-google-fonts/poppins";
-import { HomeScreen } from "./src/screens/HomeScreen";
+import * as Notifications from "expo-notifications";
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from "@expo-google-fonts/poppins";
+import { AuthProvider, useAuth } from "./src/lib/auth";
+import { registerForPush } from "./src/lib/notifications";
+import { supabase } from "./src/lib/supabase";
+import { RootNavigator } from "./src/navigation/RootNavigator";
 import { color } from "./src/theme";
 
-// React Navigation isn't wired up yet — HomeScreen is the only Main Screen
-// built so far (see docs/blueprint.html §06, Phase 02). Swap this for a
-// navigator's initial route once Categories/Shop Detail/etc. exist.
+// Foreground presentation. `shouldShowAlert` is deprecated in SDK 57 —
+// banner and list are separate switches now
+// (https://docs.expo.dev/versions/v57.0.0/sdk/notifications/).
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+/**
+ * Registers this device for push once there's a session to attach the token
+ * to, and clears the badge when the app is opened from a notification.
+ *
+ * Deliberately silent about failure: `registerForPush` returns a `skipped`
+ * reason for every normal case (simulator, permission declined, no EAS
+ * project yet), and none of those are worth interrupting the user for. The
+ * in-app inbox works regardless.
+ */
+function PushRegistration() {
+  const { session } = useAuth();
+
+  useEffect(() => {
+    if (!session) return;
+    void registerForPush(supabase);
+  }, [session]);
+
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(() => {
+      void Notifications.setBadgeCountAsync(0);
+    });
+    return () => subscription.remove();
+  }, []);
+
+  return null;
+}
+
 export default function App() {
-  const [fontsLoaded] = useFonts({ Poppins_400Regular, Poppins_500Medium });
+  const [fontsLoaded] = useFonts({
+    Poppins_400Regular,
+    Poppins_500Medium,
+    Poppins_600SemiBold,
+    Poppins_700Bold,
+  });
 
   if (!fontsLoaded) {
     return (
@@ -21,7 +73,10 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <HomeScreen />
+      <AuthProvider>
+        <PushRegistration />
+        <RootNavigator />
+      </AuthProvider>
       <StatusBar style="dark" />
     </SafeAreaProvider>
   );

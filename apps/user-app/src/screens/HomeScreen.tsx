@@ -1,91 +1,131 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { HeroBanner } from "../components/HeroBanner";
 import { TopBar } from "../components/TopBar";
 import { SectionHeader } from "../components/SectionHeader";
 import { CategoryTile } from "../components/CategoryTile";
 import { ShopCard } from "../components/ShopCard";
-import { BottomNav } from "../components/BottomNav";
-import { color, space } from "../theme";
-import type { CategoryTileData, FeaturedGroup } from "../types/home";
+import { supabase } from "../lib/supabase";
+import { fetchCategories, fetchShopsByCategories, type Category, type Shop } from "../lib/catalog";
+import { categoryIcon } from "../lib/categoryIcons";
+import type { RootStackParamList } from "../navigation/RootNavigator";
+import { color, space, type } from "../theme";
 
-// Sample data shaped exactly like the Figma content (get_design_context on
-// node 40:3000) — category labels and featured-group names are copied
-// verbatim from the design. Replace with real Supabase queries once
-// `categories` / `featured_listings` / `shops` have rows:
+// Home Screen — Figma node 40:3000.
 //
-//   supabase.from("categories").select("*").eq("is_active", true).order("sort_order")
-//   supabase.from("featured_listings").select("*, shops(*)").eq("category_id", id).order("rank")
-const CATEGORIES: CategoryTileData[] = [
-  { id: "club-pubs", label: "Club & Pubs", icon: "wine-outline" },
-  { id: "fashion", label: "Fashion", icon: "shirt-outline" },
-  { id: "restaurants", label: "Restaurants", icon: "restaurant-outline" },
-  { id: "activities", label: "Activities", icon: "football-outline" },
-  { id: "cars", label: "Cars", icon: "car-outline" },
-  { id: "pets", label: "Pets", icon: "paw-outline" },
-  { id: "gym", label: "Gym", icon: "barbell-outline" },
-  { id: "electronic", label: "Electronic", icon: "tv-outline" },
-  { id: "view-all", label: "View All", icon: "apps-outline" },
-];
+// The layout is unchanged from the version built on 2026-08-29; what
+// changed on 2026-09-02 is that the categories and featured shops are now
+// real Supabase rows instead of the sample arrays copied from the design.
+// The sample data is gone rather than kept as a fallback: a screen that
+// silently shows fake shops when a query fails is worse than one that says
+// it couldn't load.
 
-const FEATURED: FeaturedGroup[] = [
-  {
-    categoryLabel: "Featured Restaurants",
-    shops: [
-      { id: "r1", name: "Restaurant 1" },
-      { id: "r2", name: "Restaurant 2" },
-      { id: "r3", name: "Restaurant 3" },
-    ],
-  },
-  {
-    categoryLabel: "Featured Clubs & Pubs",
-    shops: [
-      { id: "c1", name: "Club 1" },
-      { id: "c2", name: "Pub 2" },
-      { id: "c3", name: "Club & Pub 3" },
-    ],
-  },
-  {
-    categoryLabel: "Featured Pet Care",
-    shops: [
-      { id: "p1", name: "Pet Care 1" },
-      { id: "p2", name: "Pet Care 2" },
-      { id: "p3", name: "Pet Care 3" },
-    ],
-  },
-];
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+type FeaturedGroup = { category: Category; shops: Shop[] };
 
 export function HomeScreen() {
+  const navigation = useNavigation<Nav>();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [featured, setFeatured] = useState<FeaturedGroup[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      const cats = await fetchCategories(supabase);
+      setCategories(cats);
+
+      // Three featured rows, matching the design. Categories with no live
+      // shops are skipped rather than rendered as an empty row.
+      const topCategories = cats.slice(0, 3);
+      const grouped = await fetchShopsByCategories(
+        supabase,
+        topCategories.map((c) => c.id)
+      );
+      setFeatured(
+        topCategories
+          .map((category) => ({ category, shops: grouped.get(category.id) ?? [] }))
+          .filter((group) => group.shops.length > 0)
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not load shops.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    void load();
+  }, [load]);
+
+  const openShop = useCallback(
+    (shop: Shop) => navigation.navigate("ShopDetail", { shopId: shop.id, shopName: shop.name }),
+    [navigation]
+  );
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <TopBar city="Dubai" area="D3 Park" />
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.purple} />}
+      >
+        <TopBar city="Beirut" area="Lebanon" />
         <HeroBanner />
 
-        <View style={styles.section}>
-          <SectionHeader title="Categories" />
-          <View style={styles.categoryGrid}>
-            {CATEGORIES.map((cat) => (
-              <CategoryTile key={cat.id} category={cat} />
+        {loading ? (
+          <View style={styles.centered}>
+            <ActivityIndicator color={color.purple} />
+          </View>
+        ) : error ? (
+          <View style={styles.centered}>
+            <Text style={styles.error}>{error}</Text>
+            <Text style={styles.errorHint}>Pull down to try again.</Text>
+          </View>
+        ) : (
+          <>
+            <View style={styles.section}>
+              <SectionHeader title="Categories" />
+              <View style={styles.categoryGrid}>
+                {categories.map((cat) => (
+                  <CategoryTile
+                    key={cat.id}
+                    category={{ id: cat.id, label: cat.name, icon: categoryIcon(cat.name) }}
+                    onPress={() => navigation.navigate("Tabs", { screen: "Categories" })}
+                  />
+                ))}
+              </View>
+            </View>
+
+            {featured.map((group) => (
+              <View style={styles.section} key={group.category.id}>
+                <SectionHeader title={`Featured ${group.category.name}`} />
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+                  {group.shops.map((shop) => (
+                    <ShopCard
+                      key={shop.id}
+                      shop={{ id: shop.id, name: shop.name, imageUrl: shop.coverImages[0] ?? shop.logoUrl ?? undefined }}
+                      onPress={() => openShop(shop)}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
             ))}
-          </View>
-        </View>
-
-        {FEATURED.map((group) => (
-          <View style={styles.section} key={group.categoryLabel}>
-            <SectionHeader title={group.categoryLabel} />
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-              {group.shops.map((shop) => (
-                <ShopCard key={shop.id} shop={shop} />
-              ))}
-            </ScrollView>
-          </View>
-        ))}
+          </>
+        )}
       </ScrollView>
-
-      <View style={styles.navWrap} pointerEvents="box-none">
-        <BottomNav active="home" />
-      </View>
     </SafeAreaView>
   );
 }
@@ -96,5 +136,7 @@ const styles = StyleSheet.create({
   section: { gap: space.sm },
   categoryGrid: { flexDirection: "row", flexWrap: "wrap", gap: space.md, justifyContent: "space-between" },
   row: { gap: space.xs },
-  navWrap: { position: "absolute", left: 0, right: 0, bottom: 25 },
+  centered: { paddingVertical: space.xl, alignItems: "center", gap: space.xs },
+  error: { ...type.cardTitle, color: color.danger, textAlign: "center" },
+  errorHint: { ...type.caption, color: color.textMuted },
 });

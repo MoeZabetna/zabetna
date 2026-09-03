@@ -28,7 +28,7 @@ export default async function RewardsPage({
   let query = supabase
     .from("reward_redemption_requests")
     .select(
-      "id, user_id, points_requested, usd_amount, phone_number, status, requested_at, processed_at, admin_note, profiles(full_name)"
+      "id, user_id, points_requested, usd_amount, service_fee_usd, net_usd_amount, phone_number, status, requested_at, processed_at, admin_note, profiles(full_name)"
     )
     .order("requested_at", { ascending: false });
 
@@ -42,8 +42,11 @@ export default async function RewardsPage({
       <div className="mb-6">
         <h1 className="text-xl font-semibold text-neutral-900">Reward Program</h1>
         <p className="text-sm text-neutral-500">
-          Cash-out requests against a user&apos;s point balance ($0.25/point, 40-point / $10.00 minimum).
-          Pressing &quot;Redeem&quot; in the app sweeps the user&apos;s full available balance — see{" "}
+          Cash-out requests against a user&apos;s point balance ($0.25/point, 40-point / $10.00 minimum), less a
+          $1.00 service fee per request. <strong className="font-semibold text-neutral-900">Transfer the
+          &quot;Send this amount&quot; column, not the points value</strong> — the fee is withheld, so a 40-point
+          request is a $9.00 transfer. Pressing &quot;Redeem&quot; in the app sweeps the user&apos;s full available
+          balance — see{" "}
           <a href="/users" className="text-neutral-900 underline">
             Users
           </a>{" "}
