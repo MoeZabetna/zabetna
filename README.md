@@ -54,7 +54,9 @@ Supabase URL and anon key.
 
 **Restaurant App**: login (gated on an active `shop_staff` row, not just a
 valid Supabase Auth session), QR + manual redeem screen, and per-shop
-reports are built.
+reports are built. Needs `apps/restaurant-app/.env` (copy `.env.example`).
+There are **no shop staff accounts yet** — create one from the Admin Panel
+under Shops → Staff, which returns a temporary password to sign in with.
 
 **Rewards payouts** (updated 2026-09-03): a payout requires the user's phone
 number to be **OTP-verified at payout time** (not at signup), and every
